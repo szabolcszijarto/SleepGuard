@@ -81,7 +81,7 @@ public class Recording implements java.io.Serializable {
 		if (chart != null ) {
 			chart.compress(Bitmap.CompressFormat.PNG, 100, f);
 		};
-		// Error handling if null?
+		// TO-DO: Error handling if null?
 	}
 	
 	public void createChartImage () {
@@ -96,9 +96,9 @@ public class Recording implements java.io.Serializable {
 			x_sec_per_pixel = 1;
 		}
 		int chart_width = (int)Math.ceil(elapsed_secs / x_sec_per_pixel);
-		int chart_height = 220;					// vertical size of the chart in BPM
+		int chart_height = 280;					// vertical size of the chart in BPM
 		
-		int x_border = 15, y_border = 15;
+		int x_border = 20, y_border = 15;
 		int x_size = chart_width+2*x_border;
 		int y_size = chart_height+2*y_border;
 		int x_origo = x_border;
@@ -108,7 +108,7 @@ public class Recording implements java.io.Serializable {
 		// create bitmap and draw axis
 		chart = Bitmap.createBitmap( x_size, y_size, Bitmap.Config.ARGB_8888);
 		
-		// create canvas and draw chart
+		// create canvas
 		Paint p = new Paint();
 		Canvas c = new Canvas (chart);
 		// fill background
@@ -119,10 +119,12 @@ public class Recording implements java.io.Serializable {
 		c.drawLine(x_origo-1, y_origo+1, x_origo+chart_width, y_origo+1, p);		// X axis
 		c.drawLine(x_origo-1, y_origo+1, x_origo-1, y_origo-chart_height, p);		// Y axis
 		// draw Y axis (BPM) markers and label
-		for (int mind = 50; mind <= 200 ; mind=mind+10) {
+		for (int mind = 50; mind <= 250 ; mind=mind+10) {
 			p.setColor(Color.BLACK);
+			p.setTextSize(8);
 			if (mind%50 == 0) {
 				c.drawLine(x_origo-1-2*marker_size, y_origo+1-mind, x_origo-1+2*marker_size, y_origo+1-mind, p);	// Y axis long marker
+				c.drawText(String.valueOf(mind), 3, y_origo+1-mind, p);
 			} else {
 				c.drawLine(x_origo-1-marker_size, y_origo+1-mind, x_origo-1+marker_size, y_origo+1-mind, p);		// Y axis short marker
 			}
@@ -146,7 +148,7 @@ public class Recording implements java.io.Serializable {
 			}
 			t.lineTo(x_origo+offset, y_origo-r.pulse);
 		}
-		p.setColor(Color.GREEN);
+		p.setColor(Color.argb(255, 0, 200, 0)); // dark green, non-transparent
 		p.setStyle(Paint.Style.STROKE);
 		c.drawPath(t, p);
 	}

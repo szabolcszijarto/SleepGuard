@@ -40,6 +40,7 @@ public class HeartRateWatcher
 
 	public void connect() {
         myAct.setStatus("Connecting...");
+        // register with the ANT+ plugin
 		AntPlusHeartRatePcc.requestAccess(myAct, myAct, this, this);
 		myAct.connectButton.setText("Disconnect");
 	}
@@ -62,8 +63,9 @@ public class HeartRateWatcher
 	@Override
 	public void start() {
 		if (!isConnected()) {
-			Toast.makeText(myAct, "Failed: no HR belt connected", Toast.LENGTH_SHORT).show();
+			Toast.makeText(myAct, "Please connect to HR belt first", Toast.LENGTH_SHORT).show();
 		} else {
+			// we're connected --> initialize and start the recording
 			r.init();
 			numPeaks=0;
 			timePeaksSecs=0;
@@ -89,12 +91,11 @@ public class HeartRateWatcher
 		// to-do...here?
 	}
 	
-	public String getNumPeaks() {
-		Integer i = numPeaks;
-		return i.toString();
+	public int getNumPeaks() {
+		return numPeaks;
 	}
 	
-	public String getTimePeaks() {
+	public String getTimePeaksStr() {
 	    int timePeaksMins = timePeaksSecs/60;
 	    int timePeaksHours = timePeaksMins/60;
 	    String timePeaks = timePeaksHours +":"+ timePeaksMins +":"+ timePeaksSecs; 
