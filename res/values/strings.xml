@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SleepGuard</string>
+    <string name="action_settings">Settings</string>
+    <string name="connectButton">disconnect</string>
+    <string name="statusMsg">status</string>
+    <string name="startStop">start - stop button</string>
+    <string name="currentPulse">current pulse</string>
+    <string name="numPeaks">number of peaks</string>
+    <string name="timePeaks">time of peaks</string>
+    <string name="totalTime">time elapsed</string>
+    <string name="startTime">time started</string>
+    <string name="endTime"  >time finished</string>
+    
+</resources>
