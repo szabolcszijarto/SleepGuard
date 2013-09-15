@@ -47,21 +47,23 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	}
 	
 	public void refresh(Context c) {
+		RecordingListItem t;
+
 		recordingList.clear();
 
 		// find dat files
-		datfiles = c.getExternalFilesDir(null).listFiles(new FilenameFilter() {
+		t = new RecordingListItem(c);
+		datfiles = t.getDatDir().listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(Recording.datExtension)); 
+				return (name.endsWith(RecordingListItem.datExtension)); 
 			}
 		});
 
 		// TODO: here, datfiles should be sorted in reverse order so that latest recording appears on top
 		
 		// fill recording list with RecordingListItem objects
-		RecordingListItem t;
 		for (int i=0; i<datfiles.length; i++) {
-			t = new RecordingListItem(datfiles[i].getName());
+			t = new RecordingListItem(c, datfiles[i].getName());
 			recordingList.add(t);
 		}
 
@@ -74,12 +76,12 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		
 		// determine png file name for the item that was clicked
-		String dfn = datfiles[position].getName();
-		String filename = dfn.substring(0, dfn.length()-Recording.datExtension.length())+Recording.pngExtension;
+		RecordingListItem ri = (RecordingListItem) parent.getAdapter().getItem(position);
+		String pngfn = ri.getPngFullPath();
 
 		// create intent and call ShowRecording activity
 		Intent i = new Intent(parent.getContext(), Activity_ShowRecording.class);
-		i.putExtra(Recording.EXTRA_RECFILENAME, filename); 
+		i.putExtra(RecordingListItem.EXTRA_RECFILENAME, pngfn); 
 		// TODO log.makeText(this, "Pos = "+position+" Extra = "+i.getStringExtra(EXTRA_RECFILENAME), Toast.LENGTH_LONG).show();
 		parent.getContext().startActivity(i);
 	}
@@ -114,8 +116,11 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
     	        switch (item.getItemId()) {
     	            case R.id.item_delete:
     	        		// TODO : delete the files and refresh the listview
-    	            	String s = parent.getAdapter().getItem(position).toString();
-    	        		Toast.makeText(v.getContext(), "Pos = "+position+" name = "+s, Toast.LENGTH_LONG).show();
+    	            	ArrayAdapter<RecordingListItem> a = (ArrayAdapter<RecordingListItem>) parent.getAdapter();
+    	            	RecordingListItem ri = (RecordingListItem) a.getItem(position);
+    	            	ri.deleteFiles();
+    	            	a.remove(ri);
+    	        		//Toast.makeText(v.getContext(), "Deleted", Toast.LENGTH_LONG).show();
     	                mode.finish(); // Action picked, so close the CAB
     	                return true;
     	            default:

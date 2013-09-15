@@ -27,8 +27,9 @@ public class HeartRateWatcher
 {
 	private static int numPeaks = 0, timePeaksSecs = 0;
 	private boolean connected = false;
-	private AntPlusHeartRatePcc hrPcc = null;
-	private Recording r = null;
+	private AntPlusHeartRatePcc hrPcc;
+	private Recording r;
+	private RecordingListItem ri;
 //	IDeviceStateChangeReceiver statRcvr;
 //	IPluginAccessResultReceiver<AntPlusHeartRatePcc> resRcvr;
 
@@ -76,11 +77,64 @@ public class HeartRateWatcher
 	public void stop() {
 		super.stop();
 		// now that we know the time the recording was stopped, set file names 
-		r.setFileNames(timeStarted,  timeStopped);
+		ri = new RecordingListItem(myAct, timeStarted,  timeStopped);
 		// disconnect in order to allow safe saving of the recording (otherwise ConcurrentModificationException comes?)
 		disconnect(false);
 		// and now save the files
 		save(true, true, true);
+	}
+
+	public void save(boolean saveDat, boolean saveCsv, boolean savePng) {
+		// save the recording in 3 formats to external storage
+		
+		String state = Environment.getExternalStorageState();
+		if (!Environment.MEDIA_MOUNTED.equals(state)) {
+			Toast.makeText(myAct, "Save error: cannot write to external storage", Toast.LENGTH_LONG).show();;
+			return;
+		}
+		String fname = null;
+		// serialize the Recording object to a .DAT file
+		if (saveDat) {
+			try {
+				fname = ri.getDatFullPath();
+				FileOutputStream fout = new FileOutputStream(fname);
+				ObjectOutputStream oos = new ObjectOutputStream(fout);
+				oos.writeObject(r);
+				oos.close();
+				fout.close();
+				//Toast.makeText(myAct, "DAT saved in: "+fname, Toast.LENGTH_SHORT).show();
+			} catch(IOException i) {
+				Toast.makeText(myAct, "DAT save error: "+i.toString(), Toast.LENGTH_SHORT).show();
+				i.printStackTrace();
+			}
+		};
+		// save pulse data as CSV file
+		if (saveCsv) {
+			try {
+				File f = new File(ri.getCsvDir(), ri.getCsvFileName());
+				BufferedWriter w = new BufferedWriter(new FileWriter(f));
+				r.dumpToCsv(w);
+				w.close();
+				//Toast.makeText(myAct, "CSV saved in: "+f.getAbsolutePath(), Toast.LENGTH_SHORT).show();;
+			} catch (IOException i) {
+				Toast.makeText(myAct, "CSV save error: "+i.toString(), Toast.LENGTH_SHORT).show();
+				i.printStackTrace();
+			}
+		}
+		// save the pulse chart as PNG file
+		if (savePng) {
+			try {
+				File f = new File(ri.getPngDir(), ri.getPngFileName());
+				FileOutputStream of = new FileOutputStream(f);
+				r.drawChartBitmap();
+				r.dumpToPng(of);
+				of.close();
+				//Toast.makeText(myAct, "PNG saved in: "+f.getAbsolutePath(), Toast.LENGTH_SHORT).show();;
+			} catch (IOException i) {
+				Toast.makeText(myAct, "PNG save error: "+i.toString(), Toast.LENGTH_SHORT).show();
+				i.printStackTrace();
+			}
+		}
 	}
 
 	private void newBeat(HeartRateRec hrrec) {
@@ -100,61 +154,6 @@ public class HeartRateWatcher
 	    int timePeaksHours = timePeaksMins/60;
 	    String timePeaks = timePeaksHours +":"+ timePeaksMins +":"+ timePeaksSecs; 
 	    return timePeaks;
-	}
-
-	public void save(boolean saveDat, boolean saveCsv, boolean savePng) {
-		// save the recording in 3 formats to external storage
-		
-		String state = Environment.getExternalStorageState();
-		if (!Environment.MEDIA_MOUNTED.equals(state)) {
-			Toast.makeText(myAct, "Save error: cannot write to external storage", Toast.LENGTH_LONG).show();;
-			return;
-		}
-		String fname = null;
-		// serialize the Recording object to a .DAT file
-		if (saveDat) {
-			try {
-				fname = myAct.getExternalFilesDir(null) + "/" + r.getDatFileName();
-				FileOutputStream fout = new FileOutputStream(fname);
-				ObjectOutputStream oos = new ObjectOutputStream(fout);
-				oos.writeObject(r);
-				oos.close();
-				fout.close();
-				//Toast.makeText(myAct, "DAT saved in: "+fname, Toast.LENGTH_SHORT).show();
-			} catch(IOException i) {
-				Toast.makeText(myAct, "DAT save error: "+i.toString(), Toast.LENGTH_SHORT).show();
-				i.printStackTrace();
-			}
-		};
-		// save pulse data as CSV file
-		if (saveCsv) {
-			try {
-				fname = r.getCsvFileName();
-				File f = new File(myAct.getExternalFilesDir(null), fname);
-				BufferedWriter w = new BufferedWriter(new FileWriter(f));
-				r.dumpToCsv(w);
-				w.close();
-				//Toast.makeText(myAct, "CSV saved in: "+f.getAbsolutePath(), Toast.LENGTH_SHORT).show();;
-			} catch (IOException i) {
-				Toast.makeText(myAct, "CSV save error: "+i.toString(), Toast.LENGTH_SHORT).show();
-				i.printStackTrace();
-			}
-		}
-		// save the pulse chart as PNG file
-		if (savePng) {
-			try {
-				fname = r.getPngFileName();
-				File f = new File(myAct.getExternalFilesDir(null), fname);
-				FileOutputStream of = new FileOutputStream(f);
-				r.drawChartBitmap();
-				r.dumpToPng(of);
-				of.close();
-				//Toast.makeText(myAct, "PNG saved in: "+f.getAbsolutePath(), Toast.LENGTH_SHORT).show();;
-			} catch (IOException i) {
-				Toast.makeText(myAct, "PNG save error: "+i.toString(), Toast.LENGTH_SHORT).show();
-				i.printStackTrace();
-			}
-		}
 	}
 
     public void onDeviceStateChange(final int newDeviceState) {
@@ -185,7 +184,7 @@ public class HeartRateWatcher
             // error handling
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatCHANNELNOTAVAILABLE:
                 Toast.makeText(myAct, "Channel Not Available", Toast.LENGTH_SHORT).show();
-                myAct.setStatus("Channel Not Available. Do Menu->Reset.");
+                myAct.setStatus("Channel Not Available");
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatOTHERFAILURE:
                 Toast.makeText(myAct, "RequestAccess failed, see logcat for details", Toast.LENGTH_SHORT).show();
@@ -218,7 +217,7 @@ public class HeartRateWatcher
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatUSERCANCELLED:
                 Toast.makeText(myAct, "User cancelled operation", Toast.LENGTH_SHORT).show();
-                myAct.setStatus("Cancelled. Do Menu->Reset.");
+                myAct.setStatus("Cancelled");
                 break;
             default:
                 Toast.makeText(myAct, "Unrecognized result: " + resultCode, Toast.LENGTH_SHORT).show();

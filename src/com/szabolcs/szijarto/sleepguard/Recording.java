@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -18,12 +17,7 @@ import android.graphics.Path;
 
 public class Recording implements java.io.Serializable {
 	private static final long serialVersionUID = 19741001L;
-	private String fileName = "";
 	private transient Bitmap chart;
-	public static final String datExtension = ".dat";
-	public static final String csvExtension = ".csv";
-	public static final String pngExtension = ".png";
-	public final static String EXTRA_RECFILENAME = "com.szabolcs.szijarto.sleepguard.recordingfilename";
 	
 	LinkedList<HeartRateRec> lst = new LinkedList<HeartRateRec>();
 	LinkedList<Peak> peaks = new LinkedList<Peak>();
@@ -51,21 +45,7 @@ public class Recording implements java.io.Serializable {
 	public boolean addpeak(Peak p) {
 		return peaks.add(p);
 	}
-	
-	@Override
-	public String toString() {
-		return fileName+datExtension;
-	}
-	
-	public void setFileNames(Date timeStarted, Date timeStopped) {
-		SimpleDateFormat ft = new SimpleDateFormat ("yyyyMMddHHmmss", Locale.US);
-		fileName = "sleepguard_" + ft.format(timeStarted) + "_" +ft.format(timeStopped);
-	}
-	
-	public String getDatFileName() { return fileName+datExtension;	}
-	public String getCsvFileName() { return fileName+csvExtension;	}
-	public String getPngFileName() { return fileName+pngExtension;	}
-	
+
 	public void dumpToCsv ( BufferedWriter w ) throws IOException {
 		// file size will be approx. 2775 bytes / min, which is ~ 166KB / hour or ~1.3MB per 8 hours sleep
 		HeartRateRec r = null;

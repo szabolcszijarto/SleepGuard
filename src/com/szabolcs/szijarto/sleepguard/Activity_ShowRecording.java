@@ -29,12 +29,12 @@ public class Activity_ShowRecording extends Activity {
 	
 	private void loadImage() {
 		// determine full path of PNG file and show label
-		String pngfilename = getExternalFilesDir(null).toString()+"/"+getIntent().getStringExtra(Recording.EXTRA_RECFILENAME);
-		recordingNameTextView.setText(pngfilename);
+		String pngf = getIntent().getStringExtra(RecordingListItem.EXTRA_RECFILENAME);
+		recordingNameTextView.setText(pngf);
 		// decode and show image
-		b = BitmapFactory.decodeFile(pngfilename, null);
+		b = BitmapFactory.decodeFile(pngf, null);
 		if (b==null) {
-			Toast.makeText(this, "Bitmap couldn't be decoded: "+pngfilename, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "Bitmap couldn't be decoded: "+pngf, Toast.LENGTH_SHORT).show();
 		}
 		recordingImageView.setImageBitmap(b);
 		recordingImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);

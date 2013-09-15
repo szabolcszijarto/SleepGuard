@@ -5,12 +5,12 @@ import java.util.Date;
 
 public abstract class GenericWatcher {
 
-	Date timeStarted, timeStopped;
-	String timeElapsed = "";
-	boolean started = false;
+	protected Date timeStarted, timeStopped;
+	private String timeElapsed = "";
+	private boolean started = false;
 	long elapsedMillis, elapsedSecs, elapsedMins, elapsedHours;
 
-	Activity_Main myAct = null;
+	protected Activity_Main myAct = null;
 	
 	public GenericWatcher (Activity_Main a) {
 		started = false;
