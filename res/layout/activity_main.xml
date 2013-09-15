@@ -134,10 +134,13 @@
 
     </LinearLayout>
 
-    <ListView
+    <com.szabolcs.szijarto.sleepguard.RecordingListView
         android:id="@+id/recordingListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
+        android:layout_height="wrap_content"
+        android:contentDescription="whatisthis"
+        android:visibility="visible" >
+
+    </com.szabolcs.szijarto.sleepguard.RecordingListView>
 
 </LinearLayout>

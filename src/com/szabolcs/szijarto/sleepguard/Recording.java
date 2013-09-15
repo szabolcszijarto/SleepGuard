@@ -23,7 +23,8 @@ public class Recording implements java.io.Serializable {
 	public static final String datExtension = ".dat";
 	public static final String csvExtension = ".csv";
 	public static final String pngExtension = ".png";
-
+	public final static String EXTRA_RECFILENAME = "com.szabolcs.szijarto.sleepguard.recordingfilename";
+	
 	LinkedList<HeartRateRec> lst = new LinkedList<HeartRateRec>();
 	LinkedList<Peak> peaks = new LinkedList<Peak>();
 	private short last_pulse = 0;
@@ -80,11 +81,11 @@ public class Recording implements java.io.Serializable {
 	public void dumpToPng ( FileOutputStream f ) throws IOException {
 		if (chart != null ) {
 			chart.compress(Bitmap.CompressFormat.PNG, 100, f);
+		// TODO: Error handling if chart == null?
 		};
-		// TO-DO: Error handling if null?
 	}
 	
-	public void createChartImage () {
+	public void drawChartBitmap () {
 
 		// calculate dimensions
 		HeartRateRec rec_first = lst.getFirst();
@@ -153,9 +154,9 @@ public class Recording implements java.io.Serializable {
 		c.drawPath(t, p);
 	}
 	
-	public Bitmap getChartBitmap () {
+	public Bitmap getChartBitmap() {
 		if (chart == null) {
-			createChartImage();
+			drawChartBitmap();
 		}
 		return chart;
 	}

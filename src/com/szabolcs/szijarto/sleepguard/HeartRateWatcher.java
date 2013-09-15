@@ -146,7 +146,7 @@ public class HeartRateWatcher
 				fname = r.getPngFileName();
 				File f = new File(myAct.getExternalFilesDir(null), fname);
 				FileOutputStream of = new FileOutputStream(f);
-				r.createChartImage();
+				r.drawChartBitmap();
 				r.dumpToPng(of);
 				of.close();
 				//Toast.makeText(myAct, "PNG saved in: "+f.getAbsolutePath(), Toast.LENGTH_SHORT).show();;
