@@ -73,6 +73,7 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 			recordingList.add(t);
 		}
 
+		// set adapter
 		ArrayAdapter<RecordingListItem> adapter = new ArrayAdapter<RecordingListItem>(
 				c, android.R.layout.simple_list_item_1 , recordingList);
 		setAdapter(adapter);
@@ -85,6 +86,8 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 		RecordingListItem ri = (RecordingListItem) parent.getAdapter().getItem(position);
 		String pngfn = ri.getPngFullPath();
 
+		//TODO if png file doesn't exist, recreate it
+		
 		// create intent and show image using gallery
 		Intent photoIntent = new Intent(Intent.ACTION_VIEW);
         photoIntent.setDataAndType(Uri.fromFile(new File(pngfn)),"image/*");
