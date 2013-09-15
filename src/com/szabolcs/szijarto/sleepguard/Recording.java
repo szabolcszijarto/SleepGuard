@@ -61,7 +61,6 @@ public class Recording implements java.io.Serializable {
 	public void dumpToPng ( FileOutputStream f ) throws IOException {
 		if (chart != null ) {
 			chart.compress(Bitmap.CompressFormat.PNG, 100, f);
-		// TODO: Error handling if chart == null?
 		};
 	}
 	

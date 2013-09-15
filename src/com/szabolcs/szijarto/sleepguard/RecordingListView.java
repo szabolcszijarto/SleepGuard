@@ -2,6 +2,8 @@ package com.szabolcs.szijarto.sleepguard;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 
 import android.content.Context;
@@ -21,8 +23,6 @@ import android.widget.ListView;
 
 public class RecordingListView extends ListView implements OnItemClickListener,	OnItemLongClickListener {
 
-	// TODO get rid of this...
-	File[] datfiles = null;
 	LinkedList<RecordingListItem> recordingList = new LinkedList<RecordingListItem>();	// list of .dat filenames containing serialized Recording objects
 	private ActionMode mActionMode = null;
 
@@ -48,6 +48,7 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	
 	public void refresh(Context c) {
 		RecordingListItem t;
+		File[] datfiles;
 
 		recordingList.clear();
 
@@ -59,7 +60,12 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 			}
 		});
 
-		// TODO: here, datfiles should be sorted in reverse order so that latest recording appears on top
+		// sort by date, descending
+		Arrays.sort(datfiles, new Comparator<File>() {
+		    public int compare(File f1, File f2) {
+		        return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
+		    }
+		});
 		
 		// fill recording list with RecordingListItem objects
 		for (int i=0; i<datfiles.length; i++) {
@@ -114,12 +120,12 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
     	    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
     	        switch (item.getItemId()) {
     	            case R.id.item_delete:
-    	        		// TODO : delete the files and refresh the listview
-    	            	ArrayAdapter<RecordingListItem> a = (ArrayAdapter<RecordingListItem>) parent.getAdapter();
+    	        		//delete the files and refresh the listview
+    	            	@SuppressWarnings("unchecked")
+						ArrayAdapter<RecordingListItem> a = (ArrayAdapter<RecordingListItem>) parent.getAdapter();
     	            	RecordingListItem ri = (RecordingListItem) a.getItem(position);
     	            	ri.deleteFiles();
     	            	a.remove(ri);
-    	        		//Toast.makeText(v.getContext(), "Deleted", Toast.LENGTH_LONG).show();
     	                mode.finish(); // Action picked, so close the CAB
     	                return true;
     	            default:
