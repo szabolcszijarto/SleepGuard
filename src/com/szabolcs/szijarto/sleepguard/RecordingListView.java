@@ -49,9 +49,7 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	public void refresh(Context c) {
 		RecordingListItem t;
 		File[] datfiles;
-
 		recordingList.clear();
-
 		// find dat files
 		t = new RecordingListItem(c);
 		datfiles = t.getDatDir().listFiles(new FilenameFilter() {
@@ -59,20 +57,17 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 				return (name.endsWith(RecordingListItem.datExtension)); 
 			}
 		});
-
 		// sort by date, descending
 		Arrays.sort(datfiles, new Comparator<File>() {
 		    public int compare(File f1, File f2) {
 		        return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
 		    }
 		});
-		
 		// fill recording list with RecordingListItem objects
 		for (int i=0; i<datfiles.length; i++) {
 			t = new RecordingListItem(c, datfiles[i].getName());
 			recordingList.add(t);
 		}
-
 		// set adapter
 		ArrayAdapter<RecordingListItem> adapter = new ArrayAdapter<RecordingListItem>(
 				c, android.R.layout.simple_list_item_1 , recordingList);
@@ -81,17 +76,20 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-		
 		// determine png file name for the item that was clicked
 		RecordingListItem ri = (RecordingListItem) parent.getAdapter().getItem(position);
 		String pngfn = ri.getPngFullPath();
-
-		//TODO if png file doesn't exist, recreate it
-		
-		// create intent and show image using gallery
-		Intent photoIntent = new Intent(Intent.ACTION_VIEW);
-        photoIntent.setDataAndType(Uri.fromFile(new File(pngfn)),"image/*");
-        parent.getContext().startActivity(photoIntent);
+		//if png file doesn't exist, but dat file does, then recreate png
+		if ( (!(new File(pngfn)).exists()) && (new File(ri.getDatFullPath()).exists()) ) {
+			Recording r = ri.deserializeRecording();
+			ri.savePng(r);
+		}
+		if ( (new File(pngfn)).exists() ) {
+			// create intent and show image using gallery
+			Intent photoIntent = new Intent(Intent.ACTION_VIEW);
+			photoIntent.setDataAndType(Uri.fromFile(new File(pngfn)),"image/*");
+			parent.getContext().startActivity(photoIntent);
+		}
 	}
 		
 	@Override

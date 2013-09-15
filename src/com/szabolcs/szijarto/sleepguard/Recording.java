@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
+
 import android.graphics.Bitmap;
 
 public class Recording implements java.io.Serializable {
@@ -40,6 +41,20 @@ public class Recording implements java.io.Serializable {
 		return peaks.add(p);
 	}
 
+	public void drawChartBitmap () {
+		if (chart == null) {
+			chart = new SleepChart(lst);
+		} else {
+			chart.setHRRList(lst);
+		}
+	}
+
+	public Bitmap getChartBitmap() {
+		if (chart != null) {
+			return chart.getBitmap();
+		} else return null;
+	}
+	
 	public void dumpToCsv ( BufferedWriter w ) throws IOException {
 		// file size will be approx. 2775 bytes / min, which is ~ 166KB / hour or ~1.3MB per 8 hours sleep
 		HeartRateRec r = null;
@@ -51,23 +66,11 @@ public class Recording implements java.io.Serializable {
 			w.write(r.seqno+";"+r.heartbeats+";"+r.pulse+";"+ft.format(r.timestamp)+"\n");
 		}
 	}
-
-	public void drawChartBitmap () {
-		if (chart == null) {
-			chart = new SleepChart(lst);
-		} else {
-			chart.setHRRList(lst);
-		}
-	}
 	
 	public void dumpToPng ( FileOutputStream f ) throws IOException {
 		if (chart != null ) {
 			chart.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, f);
 		};
-	}
-	
-	public Bitmap getChartBitmap() {
-		return chart.getBitmap();
 	}
 	
 }

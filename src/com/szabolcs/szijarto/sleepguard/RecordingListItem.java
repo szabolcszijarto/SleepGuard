@@ -1,12 +1,20 @@
 package com.szabolcs.szijarto.sleepguard;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import android.content.Context;
 import android.os.Environment;
+import android.widget.Toast;
 
 public class RecordingListItem {
 	private String fileName, displayName;
@@ -85,6 +93,64 @@ public class RecordingListItem {
 		f.delete();
 		f = new File(getPngFullPath());
 		f.delete();
+	}
+
+	public void serializeRecording(Recording r) {
+		// serialize object r to the dat file
+		try {
+			FileOutputStream fout = new FileOutputStream(getDatFullPath());
+			ObjectOutputStream oos = new ObjectOutputStream(fout);
+			oos.writeObject(r);
+			oos.close();
+			fout.close();
+		} catch(IOException i) {
+			Toast.makeText(myc, "DAT save error: "+i.toString(), Toast.LENGTH_SHORT).show();
+			i.printStackTrace();
+		}
+	}
+	
+	public Recording deserializeRecording() {
+		try {
+			FileInputStream fileIn = new FileInputStream(getDatFullPath());
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+	        Recording r = (Recording) in.readObject();
+	        in.close();
+	        fileIn.close();
+		    return r;
+	    } catch(IOException i) {
+			Toast.makeText(myc, "Exception when deserializing Recording: "+i.toString(), Toast.LENGTH_SHORT).show();
+			i.printStackTrace();
+	        return null;
+	    } catch(ClassNotFoundException c) {
+			Toast.makeText(myc, "Exception when deserializing Recording: "+c.toString(), Toast.LENGTH_SHORT).show();
+			c.printStackTrace();
+	        return null;
+	    }
+	}
+
+	public void saveCsv(Recording r) {
+		try {
+			File f = new File(getCsvDir(), getCsvFileName());
+			BufferedWriter w = new BufferedWriter(new FileWriter(f));
+			r.dumpToCsv(w);
+			w.close();
+		} catch (IOException i) {
+			Toast.makeText(myc, "CSV save error: "+i.toString(), Toast.LENGTH_SHORT).show();
+			i.printStackTrace();
+		}
+	}
+	
+	public void savePng(Recording r) {
+		try {
+			File f = new File(getPngDir(), getPngFileName());
+			FileOutputStream of = new FileOutputStream(f);
+			r.drawChartBitmap();
+			r.dumpToPng(of);
+			of.close();
+		} catch (IOException i) {
+			Toast.makeText(myc, "PNG save error: "+i.toString(), Toast.LENGTH_SHORT).show();
+			i.printStackTrace();
+		}
 	}
 
 }

@@ -1,11 +1,5 @@
 package com.szabolcs.szijarto.sleepguard;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Date;
 
 import android.app.AlertDialog;
@@ -76,7 +70,7 @@ public class HeartRateWatcher
 
 	public void stop() {
 		super.stop();
-		// now that we know the time the recording was stopped, set file names 
+		// now that we know the time when the recording was stopped, set file names 
 		ri = new RecordingListItem(myAct, timeStarted,  timeStopped);
 		// disconnect in order to allow safe saving of the recording (otherwise ConcurrentModificationException comes?)
 		disconnect(false);
@@ -86,60 +80,26 @@ public class HeartRateWatcher
 
 	public void save(boolean saveDat, boolean saveCsv, boolean savePng) {
 		// save the recording in 3 formats to external storage
-		
 		String state = Environment.getExternalStorageState();
 		if (!Environment.MEDIA_MOUNTED.equals(state)) {
 			Toast.makeText(myAct, "Save error: cannot write to external storage", Toast.LENGTH_LONG).show();;
 			return;
 		}
-		String fname = null;
-		// serialize the Recording object to a .DAT file
 		if (saveDat) {
-			try {
-				fname = ri.getDatFullPath();
-				FileOutputStream fout = new FileOutputStream(fname);
-				ObjectOutputStream oos = new ObjectOutputStream(fout);
-				oos.writeObject(r);
-				oos.close();
-				fout.close();
-			} catch(IOException i) {
-				Toast.makeText(myAct, "DAT save error: "+i.toString(), Toast.LENGTH_SHORT).show();
-				i.printStackTrace();
-			}
+			ri.serializeRecording(r);
 		};
-		// save pulse data as CSV file
 		if (saveCsv) {
-			try {
-				File f = new File(ri.getCsvDir(), ri.getCsvFileName());
-				BufferedWriter w = new BufferedWriter(new FileWriter(f));
-				r.dumpToCsv(w);
-				w.close();
-			} catch (IOException i) {
-				Toast.makeText(myAct, "CSV save error: "+i.toString(), Toast.LENGTH_SHORT).show();
-				i.printStackTrace();
-			}
+			ri.saveCsv(r);
 		}
-		// save the pulse chart as PNG file
 		if (savePng) {
-			try {
-				File f = new File(ri.getPngDir(), ri.getPngFileName());
-				FileOutputStream of = new FileOutputStream(f);
-				r.drawChartBitmap();
-				r.dumpToPng(of);
-				of.close();
-			} catch (IOException i) {
-				Toast.makeText(myAct, "PNG save error: "+i.toString(), Toast.LENGTH_SHORT).show();
-				i.printStackTrace();
-			}
+			ri.savePng(r);
 		}
 	}
 
 	private void newBeat(HeartRateRec hrrec) {
 		// add beat to list if recording is running
 		if (isRunning()) { r.add(hrrec); };
-		
-		// identify peaks
-		// to-do...here?
+		// TODO identify peaks ... is this the right place?
 	}
 	
 	public int getNumPeaks() {
