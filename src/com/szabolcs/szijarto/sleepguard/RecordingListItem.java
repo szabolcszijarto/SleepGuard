@@ -6,10 +6,12 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.content.Context;
+import android.os.Environment;
 
 public class RecordingListItem {
 	private String fileName, displayName;
 	private File datDir, csvDir, pngDir;
+	private Context myc;
 	public static final String datExtension = ".dat";
 	public static final String csvExtension = ".csv";
 	public static final String pngExtension = ".png";
@@ -17,25 +19,28 @@ public class RecordingListItem {
 
 	// constructor getting only a context
 	public RecordingListItem (Context c) {
-		setDirs(c);
+		myc = c;
+		setDirs();
 	}
 	
 	// constructor getting a .dat filename
 	public RecordingListItem (Context c, String dfn) {
-		setDirs(c);
+		myc = c;
+		setDirs();
 		setFileNameFromDat(dfn);
 	}
 
 	// constructor getting start and end timestamps of the recording
 	public RecordingListItem (Context c, Date d1, Date d2) {
-		setDirs(c);
+		myc = c;
+		setDirs();
 		setFileNameFromTimestamps(d1, d2);
 	}
 	
-	private void setDirs(Context c) {
-		datDir = c.getExternalFilesDir(null);
-		csvDir = c.getExternalFilesDir(null);
-		pngDir = c.getExternalFilesDir(null);
+	private void setDirs() {
+		datDir = myc.getExternalFilesDir(null);
+		csvDir = myc.getExternalFilesDir(null);
+		pngDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 	}
 	
 	public void setFileNameFromDat(String s) {
@@ -65,12 +70,12 @@ public class RecordingListItem {
 	public String getDatFileName() { return fileName+datExtension; }
 	public String getCsvFileName() { return fileName+csvExtension; }
 	public String getPngFileName() { return fileName+pngExtension; }
-	public File getDatDir() { return datDir; }
-	public File getCsvDir() { return csvDir; }
-	public File getPngDir() { return pngDir; }
-	public String getDatFullPath() { return getDatDir().toString()+"/"+getDatFileName(); } 
-	public String getCsvFullPath() { return getCsvDir().toString()+"/"+getCsvFileName(); } 
-	public String getPngFullPath() { return getPngDir().toString()+"/"+getPngFileName(); } 
+	public File getDatDir()        { return datDir; }
+	public File getCsvDir() 	   { return csvDir; }
+	public File getPngDir()        { return pngDir; }
+	public String getDatFullPath() { return datDir.toString()+"/"+getDatFileName(); } 
+	public String getCsvFullPath() { return csvDir.toString()+"/"+getCsvFileName(); } 
+	public String getPngFullPath() { return pngDir.toString()+"/"+getPngFileName(); } 
 	
 	public void deleteFiles() {
 		File f;
@@ -80,7 +85,6 @@ public class RecordingListItem {
 		f.delete();
 		f = new File(getPngFullPath());
 		f.delete();
-		// TODO handle exceptions
 	}
 
 }

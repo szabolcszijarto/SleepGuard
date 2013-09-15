@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -17,7 +18,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 public class RecordingListView extends ListView implements OnItemClickListener,	OnItemLongClickListener {
 
@@ -79,11 +79,10 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 		RecordingListItem ri = (RecordingListItem) parent.getAdapter().getItem(position);
 		String pngfn = ri.getPngFullPath();
 
-		// create intent and call ShowRecording activity
-		Intent i = new Intent(parent.getContext(), Activity_ShowRecording.class);
-		i.putExtra(RecordingListItem.EXTRA_RECFILENAME, pngfn); 
-		// TODO log.makeText(this, "Pos = "+position+" Extra = "+i.getStringExtra(EXTRA_RECFILENAME), Toast.LENGTH_LONG).show();
-		parent.getContext().startActivity(i);
+		// create intent and show image using gallery
+		Intent photoIntent = new Intent(Intent.ACTION_VIEW);
+        photoIntent.setDataAndType(Uri.fromFile(new File(pngfn)),"image/*");
+        parent.getContext().startActivity(photoIntent);
 	}
 		
 	@Override

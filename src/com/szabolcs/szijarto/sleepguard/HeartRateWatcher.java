@@ -102,7 +102,6 @@ public class HeartRateWatcher
 				oos.writeObject(r);
 				oos.close();
 				fout.close();
-				//Toast.makeText(myAct, "DAT saved in: "+fname, Toast.LENGTH_SHORT).show();
 			} catch(IOException i) {
 				Toast.makeText(myAct, "DAT save error: "+i.toString(), Toast.LENGTH_SHORT).show();
 				i.printStackTrace();
@@ -115,7 +114,6 @@ public class HeartRateWatcher
 				BufferedWriter w = new BufferedWriter(new FileWriter(f));
 				r.dumpToCsv(w);
 				w.close();
-				//Toast.makeText(myAct, "CSV saved in: "+f.getAbsolutePath(), Toast.LENGTH_SHORT).show();;
 			} catch (IOException i) {
 				Toast.makeText(myAct, "CSV save error: "+i.toString(), Toast.LENGTH_SHORT).show();
 				i.printStackTrace();
@@ -129,7 +127,6 @@ public class HeartRateWatcher
 				r.drawChartBitmap();
 				r.dumpToPng(of);
 				of.close();
-				//Toast.makeText(myAct, "PNG saved in: "+f.getAbsolutePath(), Toast.LENGTH_SHORT).show();;
 			} catch (IOException i) {
 				Toast.makeText(myAct, "PNG save error: "+i.toString(), Toast.LENGTH_SHORT).show();
 				i.printStackTrace();
