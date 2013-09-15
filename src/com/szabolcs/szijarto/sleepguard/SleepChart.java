@@ -2,7 +2,6 @@ package com.szabolcs.szijarto.sleepguard;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,50 +11,86 @@ import android.graphics.Path;
 public class SleepChart {
 	
 	private LinkedList<HeartRateRec> hrrl;
+
+	private int x_sec_per_pixel;				// horizontal resolution of chart: normally 10
+	private int chart_width, chart_height;		// vertical size of the chart in BPM
+	private int x_border, y_border;
+	private int x_size, y_size; 
+	private int x_origo, y_origo;
+	private int marker_size;
+	private int max_bpm, min_bpm, step_bpm;
+	private int text_size_small;
+	private long elapsed_secs;
+	private HeartRateRec rec_first, rec_last;
+	private int n;
 	private Bitmap b;
+	private Canvas c;
+	private Paint p;
 	
 	public SleepChart(LinkedList<HeartRateRec> hrrlst) {
 		hrrl = hrrlst;
 		draw();
 	}
-	
+
 	public void draw() {
+		init();
+		draw_background();
+		draw_x_axis();
+		draw_y_axis();
+		draw_chart();
+	}
+
+	private void init() {
+		// the chart will only be created up to this position, in case values are still being added in parallel
+		n = hrrl.lastIndexOf(rec_last);
+
 		// calculate dimensions
-		HeartRateRec rec_first = hrrl.getFirst();
-		HeartRateRec rec_last = hrrl.getLast();
-		int n = hrrl.lastIndexOf(rec_last); 		// the chart will only be created up to this position, in case values are still being added in parallel
-		long elapsed_secs = ( rec_last.timestamp.getTime() - rec_first.timestamp.getTime() ) / 1000;
-		int x_sec_per_pixel = 10;				// horizontal resolution of chart: normally 10
+		x_sec_per_pixel = 10;
 		if (elapsed_secs < 600) {				// but we reduce it to 1 if recording is shorter than 10 min
 			x_sec_per_pixel = 1;
 		}
-		int chart_width = (int)Math.ceil(elapsed_secs / x_sec_per_pixel);
-		int chart_height = 280;					// vertical size of the chart in BPM
-		
-		int x_border = 20, y_border = 15;
-		int x_size = chart_width+2*x_border;
-		int y_size = chart_height+2*y_border;
-		int x_origo = x_border;
-		int y_origo = y_size-y_border;
-		int marker_size = 2;
-		
-		// create bitmap and draw axis
+		rec_first = hrrl.getFirst();
+		rec_last = hrrl.getLast();
+		elapsed_secs = ( rec_last.timestamp.getTime() - rec_first.timestamp.getTime() ) / 1000;
+		chart_width = (int)Math.ceil(elapsed_secs / x_sec_per_pixel);
+		chart_height = 280;
+		x_border = 20;
+		y_border = 15;
+		x_size = chart_width+2*x_border;
+		y_size = chart_height+2*y_border;
+		x_origo = x_border;
+		y_origo = y_size-y_border;
+		marker_size = 2;
+		min_bpm = 50;
+		max_bpm = 250;
+		step_bpm = 10;
+		text_size_small = 8;
+
+		// create bitmap, canvas and paint
 		b = Bitmap.createBitmap( x_size, y_size, Bitmap.Config.ARGB_8888);
-		
-		// create canvas
-		Paint p = new Paint();
-		Canvas c = new Canvas (b);
-		// fill background
+		c = new Canvas (b);
+		p = new Paint();
+	}
+
+	private void draw_background() {
 		p.setColor(Color.LTGRAY);
 		c.drawPaint(p);
-		// draw axis
+	}
+	
+	private void draw_x_axis() {
 		p.setColor(Color.BLACK);
-		c.drawLine(x_origo-1, y_origo+1, x_origo+chart_width, y_origo+1, p);		// X axis
-		c.drawLine(x_origo-1, y_origo+1, x_origo-1, y_origo-chart_height, p);		// Y axis
-		// draw Y axis (BPM) markers and label
-		for (int mind = 50; mind <= 250 ; mind=mind+10) {
+		c.drawLine(x_origo-1, y_origo+1, x_origo+chart_width, y_origo+1, p);
+
+	}
+	
+	private void draw_y_axis() {
+		p.setColor(Color.BLACK);
+		c.drawLine(x_origo-1, y_origo+1, x_origo-1, y_origo-chart_height, p);
+		
+		// draw markers and label
+		for (int mind = min_bpm; mind <= max_bpm ; mind=mind+step_bpm) {
 			p.setColor(Color.BLACK);
-			p.setTextSize(8);
+			p.setTextSize(text_size_small);
 			if (mind%50 == 0) {
 				c.drawLine(x_origo-1-2*marker_size, y_origo+1-mind, x_origo-1+2*marker_size, y_origo+1-mind, p);	// Y axis long marker
 				c.drawText(String.valueOf(mind), 3, y_origo+1-mind, p);
@@ -65,8 +100,9 @@ public class SleepChart {
 			p.setColor(Color.GRAY);
 			c.drawLine(x_origo-1+2*marker_size, y_origo+1-mind, x_origo-1+chart_width, y_origo+1-mind, p);			// horizontal line
 		}
+	}
 
-		// draw chart
+	private void draw_chart() {
 		int offset;
 		boolean started;
 		HeartRateRec r;
@@ -86,7 +122,7 @@ public class SleepChart {
 		p.setStyle(Paint.Style.STROKE);
 		c.drawPath(t, p);
 	}
-
+	
 	public void setHRRList(LinkedList<HeartRateRec> hrrlst) {
 		hrrl = hrrlst;
 	}
