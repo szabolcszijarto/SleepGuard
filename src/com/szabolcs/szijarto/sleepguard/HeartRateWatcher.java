@@ -23,7 +23,7 @@ public class HeartRateWatcher
 	private boolean connected = false;
 	private AntPlusHeartRatePcc hrPcc;
 	private Recording r;
-	private RecordingListItem ri;
+	private RecordingFile ri;
 //	IDeviceStateChangeReceiver statRcvr;
 //	IPluginAccessResultReceiver<AntPlusHeartRatePcc> resRcvr;
 
@@ -71,7 +71,7 @@ public class HeartRateWatcher
 	public void stop() {
 		super.stop();
 		// now that we know the time when the recording was stopped, set file names 
-		ri = new RecordingListItem(myAct, timeStarted,  timeStopped);
+		ri = new RecordingFile(myAct, timeStarted,  timeStopped);
 		// disconnect in order to allow safe saving of the recording (otherwise ConcurrentModificationException comes?)
 		disconnect(false);
 		// and now save the files

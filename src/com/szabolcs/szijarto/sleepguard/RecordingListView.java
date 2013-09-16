@@ -23,7 +23,7 @@ import android.widget.ListView;
 
 public class RecordingListView extends ListView implements OnItemClickListener,	OnItemLongClickListener {
 
-	LinkedList<RecordingListItem> recordingList = new LinkedList<RecordingListItem>();	// list of .dat filenames containing serialized Recording objects
+	LinkedList<RecordingFile> recordingList = new LinkedList<RecordingFile>();	// list of .dat filenames containing serialized Recording objects
 	private ActionMode mActionMode = null;
 
 	public RecordingListView(Context context) {
@@ -47,14 +47,14 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	}
 	
 	public void refresh(Context c) {
-		RecordingListItem t;
+		RecordingFile t;
 		File[] datfiles;
 		recordingList.clear();
 		// find dat files
-		t = new RecordingListItem(c);
+		t = new RecordingFile(c);
 		datfiles = t.getDatDir().listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return (name.endsWith(RecordingListItem.datExtension)); 
+				return (name.endsWith(RecordingFile.datExtension)); 
 			}
 		});
 		// sort by date, descending
@@ -65,11 +65,11 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 		});
 		// fill recording list with RecordingListItem objects
 		for (int i=0; i<datfiles.length; i++) {
-			t = new RecordingListItem(c, datfiles[i].getName());
+			t = new RecordingFile(c, datfiles[i].getName());
 			recordingList.add(t);
 		}
 		// set adapter
-		ArrayAdapter<RecordingListItem> adapter = new ArrayAdapter<RecordingListItem>(
+		ArrayAdapter<RecordingFile> adapter = new ArrayAdapter<RecordingFile>(
 				c, android.R.layout.simple_list_item_1 , recordingList);
 		setAdapter(adapter);
 	}
@@ -77,7 +77,7 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		// determine png file name for the item that was clicked
-		RecordingListItem ri = (RecordingListItem) parent.getAdapter().getItem(position);
+		RecordingFile ri = (RecordingFile) parent.getAdapter().getItem(position);
 		String pngfn = ri.getPngFullPath();
 		//if png file doesn't exist, but dat file does, then recreate png
 		if ( (!(new File(pngfn)).exists()) && (new File(ri.getDatFullPath()).exists()) ) {
@@ -123,8 +123,8 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
     	            case R.id.item_delete:
     	        		//delete the files and refresh the listview
     	            	@SuppressWarnings("unchecked")
-						ArrayAdapter<RecordingListItem> a = (ArrayAdapter<RecordingListItem>) parent.getAdapter();
-    	            	RecordingListItem ri = (RecordingListItem) a.getItem(position);
+						ArrayAdapter<RecordingFile> a = (ArrayAdapter<RecordingFile>) parent.getAdapter();
+    	            	RecordingFile ri = (RecordingFile) a.getItem(position);
     	            	ri.deleteFiles();
     	            	a.remove(ri);
     	                mode.finish(); // Action picked, so close the CAB

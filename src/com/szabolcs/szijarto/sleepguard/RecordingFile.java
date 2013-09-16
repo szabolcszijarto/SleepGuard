@@ -16,7 +16,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.widget.Toast;
 
-public class RecordingListItem {
+public class RecordingFile {
 	private String fileName, displayName;
 	private File datDir, csvDir, pngDir;
 	private Context myc;
@@ -26,20 +26,20 @@ public class RecordingListItem {
 	public static final String EXTRA_RECFILENAME = "com.szabolcs.szijarto.sleepguard.recordingdatfilename";
 
 	// constructor getting only a context
-	public RecordingListItem (Context c) {
+	public RecordingFile (Context c) {
 		myc = c;
 		setDirs();
 	}
 	
 	// constructor getting a .dat filename
-	public RecordingListItem (Context c, String dfn) {
+	public RecordingFile (Context c, String dfn) {
 		myc = c;
 		setDirs();
 		setFileNameFromDat(dfn);
 	}
 
 	// constructor getting start and end timestamps of the recording
-	public RecordingListItem (Context c, Date d1, Date d2) {
+	public RecordingFile (Context c, Date d1, Date d2) {
 		myc = c;
 		setDirs();
 		setFileNameFromTimestamps(d1, d2);
@@ -52,7 +52,7 @@ public class RecordingListItem {
 	}
 	
 	public void setFileNameFromDat(String s) {
-		fileName = s.substring(0, s.length() - RecordingListItem.datExtension.length());
+		fileName = s.substring(0, s.length() - RecordingFile.datExtension.length());
 		setDisplayName();
 	}
 

@@ -29,7 +29,7 @@ public class Activity_ShowRecording extends Activity {
 	
 	private void loadImage() {
 		// determine full path of PNG file and show label
-		String pngf = getIntent().getStringExtra(RecordingListItem.EXTRA_RECFILENAME);
+		String pngf = getIntent().getStringExtra(RecordingFile.EXTRA_RECFILENAME);
 		recordingNameTextView.setText(pngf);
 		// decode and show image
 		b = BitmapFactory.decodeFile(pngf, null);
