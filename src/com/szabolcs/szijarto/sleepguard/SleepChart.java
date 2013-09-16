@@ -1,7 +1,6 @@
 package com.szabolcs.szijarto.sleepguard;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Locale;
@@ -23,7 +22,7 @@ public class SleepChart {
 	private int x_origo, y_origo;
 	private int marker_size;
 	private int max_bpm, min_bpm, bpm_minor, bpm_major;
-	private int text_size_small, text_height_small;
+	private int text_size_small;
 	private int text_size_medium, text_height_medium;
 	private long elapsed_secs;
 	private int elapsed_hour, elapsed_min, elapsed_sec;
@@ -86,7 +85,6 @@ public class SleepChart {
 		marker_size = 2;
 		text_size_small = 8;
 		text_size_medium = 12;
-		text_height_small = text_size_small + 2;
 		text_height_medium = text_size_medium + 3;
 
 		// create bitmap, canvas and paint
