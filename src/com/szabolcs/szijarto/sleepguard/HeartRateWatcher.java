@@ -24,13 +24,11 @@ public class HeartRateWatcher
 	private AntPlusHeartRatePcc hrPcc;
 	private Recording r;
 	private RecordingFile ri;
-//	IDeviceStateChangeReceiver statRcvr;
-//	IPluginAccessResultReceiver<AntPlusHeartRatePcc> resRcvr;
 
 	public HeartRateWatcher (Activity_Main a) {
 		super(a);
 		r = new Recording();
-//		myAct.startStopButton.setEnabled(false);
+		// myAct.startStopButton.setEnabled(false);
 	}
 
 	public void connect() {
@@ -47,7 +45,7 @@ public class HeartRateWatcher
         }
         hrPcc = null;
         myAct.setStatus("Disconnected");
-	//	myAct.startStopButton.setEnabled(false);
+        // myAct.startStopButton.setEnabled(false);
 		myAct.connectButton.setText("Connect");
 	}
 

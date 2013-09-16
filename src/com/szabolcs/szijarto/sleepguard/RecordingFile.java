@@ -85,16 +85,32 @@ public class RecordingFile {
 	public String getCsvFullPath() { return csvDir.toString()+"/"+getCsvFileName(); } 
 	public String getPngFullPath() { return pngDir.toString()+"/"+getPngFileName(); } 
 	
-	public void deleteFiles() {
+	public void deleteFiles(boolean delDat, boolean delCsv, boolean delPng) {
 		File f;
-		f = new File(getDatFullPath());
-		f.delete();
-		f = new File(getCsvFullPath());
-		f.delete();
-		f = new File(getPngFullPath());
-		f.delete();
+		if (delDat) {
+			f = new File(getDatFullPath());
+			f.delete();
+		}
+		if (delCsv) {
+			f = new File(getCsvFullPath());
+			f.delete();
+		}
+		if (delPng) {
+			f = new File(getPngFullPath());
+			f.delete();
+		}
 	}
 
+	public void refreshFiles (boolean refreshCsv, boolean refreshPng) {
+		Recording r = deserializeRecording();
+		if (refreshCsv) {
+			saveCsv(r);
+		}
+		if (refreshPng) {
+			savePng(r);
+		}
+	}
+	
 	public void serializeRecording(Recording r) {
 		// serialize object r to the dat file
 		try {

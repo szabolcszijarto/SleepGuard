@@ -25,7 +25,7 @@ public class SleepChart {
 	private int text_size_small, text_height_small;
 	private long elapsed_secs;
 	private HeartRateRec rec_first, rec_last;
-	private int n;
+	private int max_ind;
 	private Bitmap b;
 	private Canvas c;
 	private Paint p;
@@ -50,9 +50,6 @@ public class SleepChart {
 	}
 
 	private void init() {
-		// the chart will only be created up to this position, in case values are still being added in parallel
-		n = hrrl.lastIndexOf(rec_last);
-
 		// calculate dimensions
 		x_sec_per_pixel = 10;
 		if (elapsed_secs < 600) {				// but we reduce it to 1 if recording is shorter than 10 min
@@ -64,6 +61,10 @@ public class SleepChart {
 		bpm_major = 50;
 		rec_first = hrrl.getFirst();
 		rec_last = hrrl.getLast();
+		
+		// the chart will only be created up to this position, in case values are still being added in parallel
+		max_ind = hrrl.lastIndexOf(rec_last);
+
 		elapsed_secs = ( rec_last.timestamp.getTime() - rec_first.timestamp.getTime() ) / 1000;
 		x_border = 20;
 		y_border = 15;
@@ -139,7 +140,7 @@ public class SleepChart {
 		ListIterator<HeartRateRec> l = hrrl.listIterator(0) ;
 		Path t = new Path();
 		started = false;
-		while (l.hasNext() && (l.nextIndex()<n)) {		// stop if no more records, or at rec_last, just in case extra records were added to the list in the meantime
+		while (l.hasNext() && (l.nextIndex()<max_ind)) {	// stop if no more records, or at max_ind, just in case extra records were added to the list in the meantime
 			r = l.next();
 			offset = (int) Math.floor( (r.timestamp.getTime() - rec_first.timestamp.getTime()) /1000.0 /x_sec_per_pixel );
 			if (!started) {

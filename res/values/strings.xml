@@ -11,5 +11,6 @@
     <string name="totalTime">time elapsed</string>
     <string name="startTime">time started</string>
     <string name="endTime"  >time finished</string>
-    <string name="item_delete">Delete </string>
+    <string name="item_delete">Delete</string>
+    <string name="item_refresh">Refresh</string>
 </resources>

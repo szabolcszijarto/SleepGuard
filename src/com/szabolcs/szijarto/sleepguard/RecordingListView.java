@@ -81,8 +81,8 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 		String pngfn = ri.getPngFullPath();
 		//if png file doesn't exist, but dat file does, then recreate png
 		if ( (!(new File(pngfn)).exists()) && (new File(ri.getDatFullPath()).exists()) ) {
-			Recording r = ri.deserializeRecording();
-			ri.savePng(r);
+			// regenerate png and csv from dat
+			ri.refreshFiles(true, true);
 		}
 		if ( (new File(pngfn)).exists() ) {
 			// create intent and show image using gallery
@@ -119,14 +119,19 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
     	    // Called when the user selects a contextual menu item
     	    @Override
     	    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            	@SuppressWarnings("unchecked")
+    	    	ArrayAdapter<RecordingFile> a = (ArrayAdapter<RecordingFile>) parent.getAdapter();
+            	RecordingFile ri = (RecordingFile) a.getItem(position);
     	        switch (item.getItemId()) {
     	            case R.id.item_delete:
-    	        		//delete the files and refresh the listview
-    	            	@SuppressWarnings("unchecked")
-						ArrayAdapter<RecordingFile> a = (ArrayAdapter<RecordingFile>) parent.getAdapter();
-    	            	RecordingFile ri = (RecordingFile) a.getItem(position);
-    	            	ri.deleteFiles();
+    	        		//delete all the files and refresh the listview
+    	            	ri.deleteFiles(true, true, true);
     	            	a.remove(ri);
+    	                mode.finish(); // Action picked, so close the CAB
+    	                return true;
+    	            case R.id.item_refresh:
+    	            	// refresh png and csv file for the recording
+    	            	ri.refreshFiles(true, true);
     	                mode.finish(); // Action picked, so close the CAB
     	                return true;
     	            default:
