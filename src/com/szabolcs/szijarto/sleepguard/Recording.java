@@ -60,10 +60,10 @@ public class Recording implements java.io.Serializable {
 		HeartRateRec r = null;
 		Iterator<HeartRateRec> i = lst.iterator();
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
-		w.write("seqno;heartbeats;pulse;timestamp\n"); // debug only
+		w.write("seqno;timestamp;pulse;heartbeats\n"); // debug only
 		while ( i.hasNext() ) {
 			r = i.next();
-			w.write(r.seqno+";"+r.heartbeats+";"+r.pulse+";"+ft.format(r.timestamp)+"\n");
+			w.write(r.seqno+";"+ft.format(r.timestamp)+";"+r.pulse+";"+r.heartbeats+"\n");
 		}
 	}
 	

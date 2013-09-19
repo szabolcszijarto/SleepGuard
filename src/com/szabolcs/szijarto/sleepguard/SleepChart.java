@@ -1,6 +1,7 @@
 package com.szabolcs.szijarto.sleepguard;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Locale;
@@ -52,11 +53,6 @@ public class SleepChart {
 	}
 
 	private void init() {
-		// calculate dimensions
-		x_sec_per_pixel = 10;
-		if (elapsed_secs < 600) {				// but we reduce it to 1 if recording is shorter than 10 min
-			x_sec_per_pixel = 1;
-		}
 		min_bpm = 50;
 		max_bpm = 250;
 		bpm_minor = 10;
@@ -71,6 +67,13 @@ public class SleepChart {
 		elapsed_hour = (int) (elapsed_secs / 3600 ); 
 		elapsed_min = (int) ( (elapsed_secs-elapsed_hour*3600) / 60 );
 		elapsed_sec = (int) (elapsed_secs-elapsed_hour*3600-elapsed_min*60) ;
+		// calculate dimensions
+		if (elapsed_secs < 600) {
+			x_sec_per_pixel = 1;	// if total duration is < 10 minutes, 1 pixel = 1 sec (high horizontal resolution)
+		} else {
+			// TODO TESTING ONLY, OTHERWISE 5
+			x_sec_per_pixel = 1;	// otherwise 1 pixel = 1 sec (lower horizontal resolution)
+		}
 		x_border = 20;
 		y_border = 15;
 		header_height = 50;
@@ -115,26 +118,60 @@ public class SleepChart {
 	
 	private void draw_x_axis() {
 		p.setColor(Color.BLACK);
-		c.drawLine(x_origo-1, y_origo+1, x_origo+chart_width, y_origo+1, p);
+		c.drawLine(x_origo, y_origo, x_origo+chart_width, y_origo, p);
+		
+		// calculate offset of markers
+		@SuppressWarnings("deprecation")
+		int minutes = rec_first.timestamp.getMinutes();
+		@SuppressWarnings("deprecation")
+		int seconds = rec_first.timestamp.getSeconds();
+		int timeoffset = (minutes*60+seconds);
+		
+		// draw markers and labels
+		int x = 0;
+		String timelabel;
+		Date timehere = new Date();
+		SimpleDateFormat f = new SimpleDateFormat ("HH:mm", Locale.US);
+		for (int i=0; i<(elapsed_secs+timeoffset); i+=60 /* step by 1 minute */ ) {
 
+			// TODO there *must* be a better way to do this...
+			x = (i -timeoffset) / x_sec_per_pixel;
+			if (x<0) continue; // skip if this marker would be off the chart
+			
+			if (i%(600) == 0) { 	// 600 = every 10 minutes
+				p.setColor(Color.BLACK);	// long black marker every 10 minutes
+				c.drawLine(x_origo+x, y_origo+marker_size, x_origo+x, y_origo-marker_size, p);
+				p.setColor(Color.GRAY);		// ...and gray vertical line too 
+				c.drawLine(x_origo+x, y_origo-2*marker_size, x_origo+x, y_origo-chart_height, p);
+				// time label
+				timehere.setTime( rec_first.timestamp.getTime() + (i-timeoffset)*1000 );
+				timelabel = f.format(timehere);
+				p.setTextSize(text_size_small);
+				p.setColor(Color.BLACK);
+				c.drawText(timelabel, x_origo+x-12, y_origo+y_border/2, p);
+			} else {
+				p.setColor(Color.BLACK);	// otherwise short black markers every minute in between 
+				c.drawLine(x_origo+x, y_origo            , x_origo+x, y_origo-marker_size, p);
+			}
+		}
 	}
 	
 	private void draw_y_axis() {
 		p.setColor(Color.BLACK);
-		c.drawLine(x_origo-1, y_origo+1, x_origo-1, y_origo-chart_height-y_border, p);
+		c.drawLine(x_origo, y_origo, x_origo, y_origo-chart_height-y_border, p);
 		
-		// draw markers and label
+		// draw markers and labels
 		for (int mind = min_bpm; mind <= max_bpm ; mind=mind+bpm_minor) {
 			p.setColor(Color.BLACK);
 			p.setTextSize(text_size_small);
 			if (mind%bpm_major == 0) {
-				c.drawLine(x_origo-1-2*marker_size, y_origo+1-mind, x_origo-1+2*marker_size, y_origo+1-mind, p);	// Y axis long marker
-				c.drawText(String.valueOf(mind), 3, y_origo+1-mind, p);
+				c.drawLine(x_origo-2*marker_size, y_origo-mind, x_origo+2*marker_size, y_origo-mind, p);	// Y axis long marker
+				c.drawText(String.valueOf(mind), 3, y_origo-mind, p);
 			} else {
-				c.drawLine(x_origo-1-marker_size, y_origo+1-mind, x_origo-1+marker_size, y_origo+1-mind, p);		// Y axis short marker
+				c.drawLine(x_origo-marker_size, y_origo-mind, x_origo+marker_size, y_origo-mind, p);		// Y axis short marker
 			}
 			p.setColor(Color.GRAY);
-			c.drawLine(x_origo-1+2*marker_size, y_origo+1-mind, x_origo-1+chart_width, y_origo+1-mind, p);			// horizontal line
+			c.drawLine(x_origo+2*marker_size, y_origo-mind, x_origo+chart_width, y_origo-mind, p);			// horizontal line
 		}
 	}
 
