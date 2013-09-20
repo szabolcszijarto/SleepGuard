@@ -10,11 +10,11 @@ public abstract class GenericWatcher {
 	private boolean started = false;
 	long elapsedMillis, elapsedSecs, elapsedMins, elapsedHours;
 
-	protected Activity_Main myAct = null;
+	protected Activity_Main myact = null;
 	
 	public GenericWatcher (Activity_Main a) {
 		started = false;
-		myAct = a;
+		myact = a;
 	}
 	
 	public GenericWatcher() {

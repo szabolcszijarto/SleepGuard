@@ -6,11 +6,9 @@
     <string name="statusMsg">status</string>
     <string name="startStop">start - stop button</string>
     <string name="currentPulse">current pulse</string>
-    <string name="numPeaks">number of peaks</string>
-    <string name="timePeaks">time of peaks</string>
-    <string name="totalTime">time elapsed</string>
-    <string name="startTime">time started</string>
-    <string name="endTime"  >time finished</string>
+    <string name="startTime">started</string>
+    <string name="endTime"  >finished</string>
+    <string name="totalTime">elapsed</string>
     <string name="item_delete">Delete</string>
     <string name="item_refresh">Refresh</string>
 </resources>

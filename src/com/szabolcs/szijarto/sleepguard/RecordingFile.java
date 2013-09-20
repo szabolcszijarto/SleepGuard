@@ -78,9 +78,9 @@ public class RecordingFile {
 	public String getDatFileName() { return fileName+datExtension; }
 	public String getCsvFileName() { return fileName+csvExtension; }
 	public String getPngFileName() { return fileName+pngExtension; }
-	public File getDatDir()        { return datDir; }
-	public File getCsvDir() 	   { return csvDir; }
-	public File getPngDir()        { return pngDir; }
+	public File   getDatDir()      { return datDir; }
+	public File   getCsvDir() 	   { return csvDir; }
+	public File   getPngDir()      { return pngDir; }
 	public String getDatFullPath() { return datDir.toString()+"/"+getDatFileName(); } 
 	public String getCsvFullPath() { return csvDir.toString()+"/"+getCsvFileName(); } 
 	public String getPngFullPath() { return pngDir.toString()+"/"+getPngFileName(); } 
@@ -103,12 +103,22 @@ public class RecordingFile {
 
 	public void refreshFiles (boolean refreshCsv, boolean refreshPng) {
 		Recording r = deserializeRecording();
-		if (refreshCsv) {
-			saveCsv(r);
+		// TODO display progress info
+		if (refreshCsv) { saveCsv(r); }
+		if (refreshPng) { savePng(r); }
+	}
+
+	public void save(Recording r, boolean saveDat, boolean saveCsv, boolean savePng) {
+		// save the recording in 3 formats to external storage
+		String state = Environment.getExternalStorageState();
+		if (!Environment.MEDIA_MOUNTED.equals(state)) {
+			Toast.makeText(myc, "Save error: cannot write to external storage", Toast.LENGTH_LONG).show();;
+			return;
 		}
-		if (refreshPng) {
-			savePng(r);
-		}
+		// TODO display progress info
+		if (saveDat) { serializeRecording(r); }
+		if (saveCsv) { saveCsv(r); }
+		if (savePng) { savePng(r); }
 	}
 	
 	public void serializeRecording(Recording r) {

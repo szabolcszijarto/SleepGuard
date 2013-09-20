@@ -36,11 +36,12 @@ public class Recording implements java.io.Serializable {
 			last_rec = r;									// otherwise we save this record for future use, see above
 		}
 	}
-	
-	public boolean addpeak(Peak p) {
-		return peaks.add(p);
-	}
 
+	public void detectPeaks() {
+		// TODO peak detection
+		;
+	}
+	
 	public void drawChartBitmap () {
 		if (chart == null) {
 			chart = new SleepChart(lst);
@@ -72,5 +73,4 @@ public class Recording implements java.io.Serializable {
 			chart.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, f);
 		};
 	}
-	
 }

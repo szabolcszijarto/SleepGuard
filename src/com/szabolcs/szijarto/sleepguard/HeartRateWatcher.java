@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Environment;
 import android.widget.Toast;
 
 import com.dsi.ant.plugins.AntPluginMsgDefines;
@@ -19,7 +18,6 @@ import com.dsi.ant.plugins.antplus.pcc.AntPlusHeartRatePcc.IHeartRateDataReceive
 public class HeartRateWatcher
 	extends GenericWatcher implements IDeviceStateChangeReceiver, IPluginAccessResultReceiver<AntPlusHeartRatePcc>
 {
-	private static int numPeaks = 0, timePeaksSecs = 0;
 	private boolean connected = false;
 	private AntPlusHeartRatePcc hrPcc;
 	private Recording r;
@@ -32,21 +30,19 @@ public class HeartRateWatcher
 	}
 
 	public void connect() {
-        myAct.setStatus("Connecting...");
+        myact.setStatus("Connecting...");
         // register with the ANT+ plugin
-		AntPlusHeartRatePcc.requestAccess(myAct, myAct, this, this);
-		myAct.connectButton.setText("Disconnect");
+		AntPlusHeartRatePcc.requestAccess(myact, myact, this, this);
+		myact.connectButton.setText("Disconnect");
 	}
 
-	public void disconnect(boolean skipRelease) {
+	public void disconnect(boolean skipReleaseAccess) {
         connected = false;
-        if (!skipRelease) {
-        	hrPcc.releaseAccess();
-        }
+        if (!skipReleaseAccess) { hrPcc.releaseAccess(); }
         hrPcc = null;
-        myAct.setStatus("Disconnected");
+        myact.setStatus("Disconnected");
         // myAct.startStopButton.setEnabled(false);
-		myAct.connectButton.setText("Connect");
+		myact.connectButton.setText("Connect");
 	}
 
 	public boolean isConnected() {
@@ -56,67 +52,37 @@ public class HeartRateWatcher
 	@Override
 	public void start() {
 		if (!isConnected()) {
-			Toast.makeText(myAct, "Please connect to HR belt first", Toast.LENGTH_SHORT).show();
+			Toast.makeText(myact, "Please connect to HR belt first", Toast.LENGTH_SHORT).show();
 		} else {
 			// we're connected --> initialize and start the recording
 			r.init();
-			numPeaks=0;
-			timePeaksSecs=0;
 			super.start();
 		}
 	}
 
 	public void stop() {
 		super.stop();
-		// now that we know the time when the recording was stopped, set file names 
-		ri = new RecordingFile(myAct, timeStarted,  timeStopped);
 		// disconnect in order to allow safe saving of the recording (otherwise ConcurrentModificationException comes?)
 		disconnect(false);
+		// now that we know the time when the recording was stopped, set file names 
+		ri = new RecordingFile(myact, timeStarted,  timeStopped);
+		// detect peaks
+		r.detectPeaks();
 		// and now save the files
-		save(true, true, true);
-	}
-
-	public void save(boolean saveDat, boolean saveCsv, boolean savePng) {
-		// save the recording in 3 formats to external storage
-		String state = Environment.getExternalStorageState();
-		if (!Environment.MEDIA_MOUNTED.equals(state)) {
-			Toast.makeText(myAct, "Save error: cannot write to external storage", Toast.LENGTH_LONG).show();;
-			return;
-		}
-		if (saveDat) {
-			ri.serializeRecording(r);
-		};
-		if (saveCsv) {
-			ri.saveCsv(r);
-		}
-		if (savePng) {
-			ri.savePng(r);
-		}
+		ri.save(r, true, true, true);
 	}
 
 	private void newBeat(HeartRateRec hrrec) {
 		// add beat to list if recording is running
 		if (isRunning()) { r.add(hrrec); };
-		// TODO identify peaks ... is this the right place?
 	}
 	
-	public int getNumPeaks() {
-		return numPeaks;
-	}
-	
-	public String getTimePeaksStr() {
-	    int timePeaksMins = timePeaksSecs/60;
-	    int timePeaksHours = timePeaksMins/60;
-	    String timePeaks = timePeaksHours +":"+ timePeaksMins +":"+ timePeaksSecs; 
-	    return timePeaks;
-	}
-
     public void onDeviceStateChange(final int newDeviceState) {
     	// this method is called back by the ANT+ plugin to notify of device state changes
-    	myAct.runOnUiThread(new Runnable() {                                            
+    	myact.runOnUiThread(new Runnable() {                                            
             @Override
             public void run() {
-                myAct.setStatus(hrPcc.getDeviceName() + ": " + AntPlusHeartRatePcc.statusCodeToPrintableString(newDeviceState));
+                myact.setStatus(hrPcc.getDeviceName() + ": " + AntPlusHeartRatePcc.statusCodeToPrintableString(newDeviceState));
                 if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.DEAD) {
                  	disconnect(false);
                 }
@@ -129,26 +95,26 @@ public class HeartRateWatcher
     	switch(resultCode) {
     		// connected
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatSUCCESS:
-                Toast.makeText(myAct, "Connected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(myact, "Connected", Toast.LENGTH_SHORT).show();
             	hrPcc = result;
                 connected = true;
         		//myAct.startStopButton.setEnabled(true);
-                myAct.setStatus(result.getDeviceName() + ": " + AntPlusHeartRatePcc.statusCodeToPrintableString(initialDeviceStateCode));
+                myact.setStatus(result.getDeviceName() + ": " + AntPlusHeartRatePcc.statusCodeToPrintableString(initialDeviceStateCode));
                 subscribeToEvents();
                 break;
             // error handling
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatCHANNELNOTAVAILABLE:
-                Toast.makeText(myAct, "Channel Not Available", Toast.LENGTH_SHORT).show();
-                myAct.setStatus("Channel Not Available");
+                Toast.makeText(myact, "Channel Not Available", Toast.LENGTH_SHORT).show();
+                myact.setStatus("Channel Not Available");
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatOTHERFAILURE:
-                Toast.makeText(myAct, "RequestAccess failed, see logcat for details", Toast.LENGTH_SHORT).show();
-                myAct.setStatus("RequestAccess failed. Do Menu->Reset.");
+                Toast.makeText(myact, "RequestAccess failed, see logcat for details", Toast.LENGTH_SHORT).show();
+                myact.setStatus("RequestAccess failed. Do Menu->Reset.");
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatDEPENDENCYNOTINSTALLED:
-                Toast.makeText(myAct, "Dependencies not installed", Toast.LENGTH_SHORT).show();
-                myAct.setStatus("Please install dependencies!");
-            	AlertDialog.Builder adlgBldr = new AlertDialog.Builder(myAct);
+                Toast.makeText(myact, "ANT+ dependencies not installed", Toast.LENGTH_SHORT).show();
+                myact.setStatus("Please install ANT+ dependencies!");
+            	AlertDialog.Builder adlgBldr = new AlertDialog.Builder(myact);
                 adlgBldr.setTitle("Missing Dependency");
                 adlgBldr.setMessage("The required application\n\"" + AntPlusHeartRatePcc.getMissingDependencyName() + "\"\n is not installed. Do you want to launch the Play Store to search for it?");
                 adlgBldr.setCancelable(true);
@@ -158,7 +124,7 @@ public class HeartRateWatcher
                                 Intent startStore = null;
                                 startStore = new Intent(Intent.ACTION_VIEW,Uri.parse("market://details?id=" + AntPlusHeartRatePcc.getMissingDependencyPackageName()));
                                 startStore.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                myAct.startActivity(startStore);
+                                myact.startActivity(startStore);
                             }
                         });
                 adlgBldr.setNegativeButton("Cancel", new OnClickListener() {
@@ -171,25 +137,25 @@ public class HeartRateWatcher
                 waitDialog.show();
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatUSERCANCELLED:
-                Toast.makeText(myAct, "User cancelled operation", Toast.LENGTH_SHORT).show();
-                myAct.setStatus("Cancelled");
+                Toast.makeText(myact, "User cancelled operation", Toast.LENGTH_SHORT).show();
+                myact.setStatus("Cancelled");
                 break;
             default:
-                Toast.makeText(myAct, "Unrecognized result: " + resultCode, Toast.LENGTH_SHORT).show();
-                myAct.setStatus("Unrecognized result: " + resultCode + ". Do Menu->Reset.");
+                Toast.makeText(myact, "Unrecognized result: " + resultCode, Toast.LENGTH_SHORT).show();
+                myact.setStatus("Unrecognized result: " + resultCode + ". Do Menu->Reset.");
                 break;
         } 
     }
 	
-    // Subscribe to heart rate events, connecting them to display their data.
+   // Subscribe to heart rate events, connecting them to display their data.
    private void subscribeToEvents() {
        hrPcc.subscribeHeartRateDataEvent(new IHeartRateDataReceiver() {
           @Override
           public void onNewHeartRateData(final int currentMessageCount, final int computedHeartRate, final long heartBeatCounter) {
-        	  myAct.runOnUiThread(new Runnable() {                                            
+        	  myact.runOnUiThread(new Runnable() {                                            
                 	@Override
                 	public void run() {
-                		myAct.setPulse(String.valueOf(currentMessageCount)+" | "+String.valueOf(computedHeartRate)+" | "+String.valueOf(heartBeatCounter));
+                		myact.setPulse(String.valueOf(currentMessageCount)+" | "+String.valueOf(computedHeartRate)+" | "+String.valueOf(heartBeatCounter));
                 	}
                 });
         	  // send a new heart rate record to the watcher
@@ -204,60 +170,8 @@ public class HeartRateWatcher
     		   myAct.runOnUiThread(new Runnable() {                                            
     			   @Override
     			   public void run() {
-//    				   tv_msgsRcvdCount.setText(String.valueOf(currentMessageCount));
-//    				   tv_timestampOfLastEvent.setText(String.valueOf(timestampOfLastEvent));
-    			   }
-    		   });
-    	   }
-       });
-       hrPcc.subscribePage4AddtDataEvent(new IPage4AddtDataReceiver() {
-    	   @Override
-    	   public void onNewPage4AddtData(final int currentMessageCount, final int manufacturerSpecificByte, final BigDecimal timestampOfPreviousToLastHeartBeatEvent) {
-    		   myAct.runOnUiThread(new Runnable() {                                            
-    			   @Override
-    			   public void run() {
-//    				   tv_msgsRcvdCount.setText(String.valueOf(currentMessageCount));
-//    				   tv_manufacturerSpecificByte.setText(String.format("0x%02X", manufacturerSpecificByte));
-//    				   tv_previousToLastHeartBeatEventTimeStamp.setText(String.valueOf(timestampOfPreviousToLastHeartBeatEvent));
-    			   }
-    		   });
-    	   }
-       });
-       hrPcc.subscribeCumulativeOperatingTimeEvent(new ICumulativeOperatingTimeReceiver() {
-    	   @Override
-    	   public void onNewCumulativeOperatingTime(final int currentMessageCount, final long cumulativeOperatingTime) {
-    		   myAct.runOnUiThread(new Runnable() {                                            
-    			   @Override
-    			   public void run() {
-//    				   tv_msgsRcvdCount.setText(String.valueOf(currentMessageCount));
-//    				   tv_cumulativeOperatingTime.setText(String.valueOf(cumulativeOperatingTime));
-    			   }
-    		   });
-    	   }
-       });
-       hrPcc.subscribeManufacturerAndSerialEvent(new IManufacturerAndSerialReceiver() {
-    	   @Override
-    	   public void onNewManufacturerAndSerial(final int currentMessageCount, final int manufacturerID, final int serialNumber) {
-    		   myAct.runOnUiThread(new Runnable() {                                            
-    			   @Override
-    			   public void run() {
-//    				   tv_msgsRcvdCount.setText(String.valueOf(currentMessageCount));
-//    				   tv_manufacturerID.setText(String.valueOf(manufacturerID));
-//    				   tv_serialNumber.setText(String.valueOf(serialNumber));
-    			   }
-    		   });
-    	   }
-       });
-       hrPcc.subscribeVersionAndModelEvent(new IVersionAndModelReceiver() {
-    	   @Override
-    	   public void onNewVersionAndModel(final int currentMessageCount, final int hardwareVersion, final int softwareVersion, final int modelNumber) {
-    		   myAct.runOnUiThread(new Runnable() {                                            
-    			   @Override
-    			   public void run() {
-//    				   tv_msgsRcvdCount.setText(String.valueOf(currentMessageCount));
-//    				   tv_hardwareVersion.setText(String.valueOf(hardwareVersion));
-//    				   tv_softwareVersion.setText(String.valueOf(softwareVersion));
-//    				   tv_modelNumber.setText(String.valueOf(modelNumber));
+				   // tv_msgsRcvdCount.setText(String.valueOf(currentMessageCount));
+				   // tv_timestampOfLastEvent.setText(String.valueOf(timestampOfLastEvent));
     			   }
     		   });
     	   }

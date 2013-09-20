@@ -12,7 +12,7 @@ public class Activity_Main extends Activity {
 
 	static private HeartRateWatcher watcher;
 
-	private TextView statusTextView, currentPulseTextView, startTimeTextView, endTimeTextView, totalTimeTextView, numPeaksTextView, timePeaksTextView;
+	private TextView statusTextView, currentPulseTextView, startTimeTextView, endTimeTextView, totalTimeTextView;
 	public Button connectButton;
 	public ImageButton startStopButton;
 	private RecordingListView recordingListView;
@@ -71,10 +71,6 @@ public class Activity_Main extends Activity {
 		startTimeTextView.setText(watcher.getTimeStarted());
 		endTimeTextView.setText(watcher.getTimeStopped());
 		totalTimeTextView.setText(watcher.getTimeElapsed());
-
-		//TODO peaks not yet supported
-		//numPeaksTextView.setText(watcher.getNumPeaks());
-		//timePeaksTextView.setText(watcher.getTimePeaksStr());
 	}
 
 	protected void findViews() {
@@ -85,8 +81,6 @@ public class Activity_Main extends Activity {
 		startTimeTextView = (TextView) findViewById(R.id.startTimeTextView);
 		endTimeTextView = (TextView) findViewById(R.id.endTimeTextView);
 		totalTimeTextView = (TextView) findViewById(R.id.totalTimeTextView);
-		numPeaksTextView = (TextView) findViewById(R.id.numPeaksTextView);
-		timePeaksTextView = (TextView) findViewById(R.id.timePeaksTextView);
 		recordingListView = (RecordingListView) findViewById(R.id.recordingListView);
 	}
 	
