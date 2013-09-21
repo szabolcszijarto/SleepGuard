@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.Locale;
 
 import android.graphics.Bitmap;
@@ -13,6 +14,7 @@ import android.graphics.Bitmap;
 public class Recording implements java.io.Serializable {
 	private static final long serialVersionUID = 19741001L;
 	private transient SleepChart chart;
+	private static final short treshold = 75;
 	
 	LinkedList<HeartRateRec> lst = new LinkedList<HeartRateRec>();
 	LinkedList<Peak> peaks = new LinkedList<Peak>();
@@ -38,8 +40,31 @@ public class Recording implements java.io.Serializable {
 	}
 
 	public void detectPeaks() {
-		// TODO peak detection
-		;
+		ListIterator<HeartRateRec> i = lst.listIterator();
+		HeartRateRec r;
+		Boolean inpeak = false;
+		Peak p = null;
+		while (i.hasNext()) {
+			r=i.next();
+			if ( (!inpeak) && (r.pulse > treshold) ) {
+				// start peak and continue
+				inpeak = true;
+				p = new Peak(r, i.previousIndex());
+				continue;
+			}
+			if ( (inpeak) && (r.pulse < treshold) ) {
+				// end of peak, save it and continue
+				inpeak = false;
+				p.close(i.previousIndex()-1);	// -1 because the current value isn't part of the peak any more
+				peaks.add(p); 					// add peak to list
+				continue;
+			}
+			if (inpeak) {
+				// within peak
+				p.add(r);
+			}
+		}
+		
 	}
 	
 	public void drawChartBitmap () {
