@@ -14,12 +14,13 @@ import android.graphics.Bitmap;
 public class Recording implements java.io.Serializable {
 	private static final long serialVersionUID = 19741001L;
 	private transient SleepChart chart;
-	private static final short treshold = 75;
-	
-	LinkedList<HeartRateRec> lst = new LinkedList<HeartRateRec>();
-	LinkedList<Peak> peaks = new LinkedList<Peak>();
+
+	private LinkedList<HeartRateRec> lst = new LinkedList<HeartRateRec>();
+	private LinkedList<Peak> peaks = new LinkedList<Peak>();
+	private static final short treshold = 75;	// peak treshold
+
 	private short last_pulse = 0;
-	HeartRateRec last_rec = null;
+	private HeartRateRec last_rec = null;
 	
 	public void init() {
 		last_pulse = 0;
@@ -69,16 +70,17 @@ public class Recording implements java.io.Serializable {
 	
 	public void drawChartBitmap () {
 		if (chart == null) {
-			chart = new SleepChart(lst);
+			chart = new SleepChart(lst, peaks, treshold);
 		} else {
-			chart.setHRRList(lst);
+			chart.setHrList(lst);
+			chart.setPeakList(peaks);
+			chart.draw();
 		}
 	}
 
 	public Bitmap getChartBitmap() {
-		if (chart != null) {
-			return chart.getBitmap();
-		} else return null;
+		if (chart == null) drawChartBitmap();
+		return chart.getBitmap();
 	}
 	
 	public void dumpToCsv ( BufferedWriter w ) throws IOException {

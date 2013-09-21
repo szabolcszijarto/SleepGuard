@@ -10,12 +10,14 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.Path;
+import android.graphics.Rect;
 
 public class SleepChart {
 	
-	private LinkedList<HeartRateRec> hrrl;
-
+	private LinkedList<HeartRateRec> hrlist;
+	private LinkedList<Peak> peaklist;
 	private int x_sec_per_pixel;				// horizontal resolution of chart: normally 10
 	private int chart_width, chart_height;		// vertical size of the chart in BPM
 	private int x_border, y_border, header_height;
@@ -29,23 +31,31 @@ public class SleepChart {
 	private int elapsed_hour, elapsed_min, elapsed_sec;
 	private HeartRateRec rec_first, rec_last;
 	private int max_ind;
+	private short treshold;
 	private Bitmap b;
 	private Canvas c;
 	private Paint p;
 	
-	public SleepChart(LinkedList<HeartRateRec> hrrlst) {
-		hrrl = hrrlst;
+	public SleepChart(LinkedList<HeartRateRec> hrlst, LinkedList<Peak> peaklst, short t) {
+		hrlist = hrlst;
+		peaklist = peaklst;
+		treshold = t;
 		draw();
 	}
 
-	public void setHRRList(LinkedList<HeartRateRec> hrrlst) {
-		hrrl = hrrlst;
-		draw();
+	public void setHrList(LinkedList<HeartRateRec> hrlst) {
+		hrlist = hrlst;
 	}
 
+	public void setPeakList(LinkedList<Peak> peaklst) {
+		peaklist = peaklst;
+	}
+	
 	public void draw() {
 		init();
 		draw_background();
+		draw_treshold();
+		draw_peaks();
 		draw_x_axis();
 		draw_y_axis();
 		draw_chart();
@@ -57,11 +67,11 @@ public class SleepChart {
 		max_bpm = 250;
 		bpm_minor = 10;
 		bpm_major = 50;
-		rec_first = hrrl.getFirst();
-		rec_last = hrrl.getLast();
+		rec_first = hrlist.getFirst();
+		rec_last = hrlist.getLast();
 		
 		// the chart will only be created up to this position, in case values are still being added in parallel
-		max_ind = hrrl.lastIndexOf(rec_last);
+		max_ind = hrlist.lastIndexOf(rec_last);
 
 		elapsed_secs = ( rec_last.timestamp.getTime() - rec_first.timestamp.getTime() ) / 1000;
 		elapsed_hour = (int) (elapsed_secs / 3600 ); 
@@ -101,6 +111,28 @@ public class SleepChart {
 		c.drawPaint(p);
 	}
 
+	private void draw_treshold() {
+		p.setColor(Color.argb(128, 100, 0, 0)); // red, semi-transparent
+		c.drawLine(x_origo, y_origo-treshold, x_origo+chart_width, y_origo-treshold, p);
+	}
+	
+	private void draw_peaks() {
+		Peak peak;
+		int x1, x2;
+		
+		p.setColor(Color.argb(128, 200, 0, 0)); // light red, semi-transparent
+		p.setStyle(Style.FILL);
+		
+		ListIterator<Peak> l = peaklist.listIterator(0) ;
+		while (l.hasNext()) {
+			peak = l.next();
+			x1 = (int) Math.floor( peak.start_time.getTime() /1000.0 /x_sec_per_pixel );
+			x2 = (int) Math.floor( peak.end_time.getTime() /1000.0 /x_sec_per_pixel );
+			Rect r = new Rect(x_origo+x1, y_origo-10, x_origo+x2, y_origo-chart_height+10);
+			c.drawRect(r, p);
+		}
+	}
+	
 	private void draw_header() {
 		p.setColor(Color.BLACK);
 		c.drawRect(x_border, y_border, x_size-x_border, y_border+header_height, p);
@@ -179,7 +211,7 @@ public class SleepChart {
 		int offset;
 		boolean started;
 		HeartRateRec r;
-		ListIterator<HeartRateRec> l = hrrl.listIterator(0) ;
+		ListIterator<HeartRateRec> l = hrlist.listIterator(0) ;
 		Path t = new Path();
 		started = false;
 		while (l.hasNext() && (l.nextIndex()<max_ind)) {	// stop if no more records, or at max_ind, just in case extra records were added to the list in the meantime
