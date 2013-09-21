@@ -54,10 +54,10 @@ public class SleepChart {
 	public void draw() {
 		init();
 		draw_background();
-		draw_treshold();
-		draw_peaks();
 		draw_x_axis();
 		draw_y_axis();
+		draw_treshold();
+		draw_peaks();
 		draw_chart();
 		draw_header();
 	}
@@ -107,7 +107,7 @@ public class SleepChart {
 	}
 
 	private void draw_background() {
-		p.setColor(Color.LTGRAY);
+		p.setColor(Color.argb(255, 225, 225, 225)); // light gray, non-transparent
 		c.drawPaint(p);
 	}
 
@@ -126,8 +126,8 @@ public class SleepChart {
 		ListIterator<Peak> l = peaklist.listIterator(0) ;
 		while (l.hasNext()) {
 			peak = l.next();
-			x1 = (int) Math.floor( peak.start_time.getTime() /1000.0 /x_sec_per_pixel );
-			x2 = (int) Math.floor( peak.end_time.getTime() /1000.0 /x_sec_per_pixel );
+			x1 = (int) Math.floor( (peak.start_time.getTime() - rec_first.timestamp.getTime()) /1000.0 /x_sec_per_pixel );
+			x2 = (int) Math.floor( (peak.end_time.getTime() - rec_first.timestamp.getTime()) /1000.0 /x_sec_per_pixel );
 			Rect r = new Rect(x_origo+x1, y_origo-10, x_origo+x2, y_origo-chart_height+10);
 			c.drawRect(r, p);
 		}

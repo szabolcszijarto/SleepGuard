@@ -47,7 +47,7 @@ public class Recording implements java.io.Serializable {
 		Peak p = null;
 		while (i.hasNext()) {
 			r=i.next();
-			if ( (!inpeak) && (r.pulse > treshold) ) {
+			if ( (!inpeak) && (r.pulse >= treshold) ) {
 				// start peak and continue
 				inpeak = true;
 				p = new Peak(r, i.previousIndex());
@@ -65,7 +65,11 @@ public class Recording implements java.io.Serializable {
 				p.add(r);
 			}
 		}
-		
+		// if still in peak, close it before we return
+		if (inpeak) {
+			p.close(i.previousIndex());
+			peaks.add(p);
+		}
 	}
 	
 	public void drawChartBitmap () {

@@ -102,8 +102,10 @@ public class RecordingFile {
 	}
 
 	public void refreshFiles (boolean refreshCsv, boolean refreshPng) {
-		Recording r = deserializeRecording();
 		// TODO display progress info
+		Recording r = deserializeRecording();
+		// TODO this is not really needed... for testing only
+		r.detectPeaks();
 		if (refreshCsv) { saveCsv(r); }
 		if (refreshPng) { savePng(r); }
 	}
