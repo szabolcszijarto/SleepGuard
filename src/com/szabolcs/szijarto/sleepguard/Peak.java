@@ -31,4 +31,14 @@ public class Peak implements java.io.Serializable {
 		duration = (end_time.getTime() - start_time.getTime()) / 1000 ;
 	}
 	
+	public String getDurationString() {
+		if ( (start_time == null) || (end_time == null) ) {
+			return "";
+		}
+		long dur = (end_time.getTime() - start_time.getTime()) / 1000 ;
+		int hour  = (int) ( dur / 3600 ) ;
+		int min   = (int) ( dur - (hour*3600) ) / 60 ;
+		int sec   = (int) ( dur - (hour*3600) ) % 60 ;
+		return ( hour + ":" + min + ":" + sec );
+	}
 }

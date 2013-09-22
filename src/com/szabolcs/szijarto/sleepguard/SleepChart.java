@@ -142,6 +142,7 @@ public class SleepChart {
 		print_header_text(1, "Timeframe : "+ft.format(rec_first.timestamp.getTime()) +
 							" - "+ft.format(rec_last.timestamp.getTime()) + "     " +
 							"Duration : "+elapsed_hour+":"+elapsed_min+":"+elapsed_sec );
+		// TODO this should be a method of Recording, similar to getDurationString() in Peaks
 		long secs = myrec.getPeaks_dur();
 		int hour  = (int) ( secs / 3600 ) ;
 		int min   = (int) ( secs - (hour*3600) ) / 60 ;

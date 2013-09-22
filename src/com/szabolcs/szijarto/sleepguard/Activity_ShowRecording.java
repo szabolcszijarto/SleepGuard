@@ -19,6 +19,7 @@ public class Activity_ShowRecording extends Activity {
 
 	private TextView recordingNameTextView;
 	private TextView peakCounterTextView;
+	private TextView durPeaksTextView, maxBpmTextView;
 	private ImageView recordingImageView;
 
 	@Override
@@ -77,6 +78,8 @@ public class Activity_ShowRecording extends Activity {
 	private void findViews() {
 		recordingNameTextView = (TextView) findViewById(R.id.recording_name);
 		peakCounterTextView = (TextView) findViewById(R.id.peak_counter);
+		durPeaksTextView = (TextView) findViewById(R.id.dur_value);
+		maxBpmTextView = (TextView) findViewById(R.id.max_bpm_value);
 		recordingImageView = (ImageView) findViewById(R.id.recording_image);
 		firstButton = (Button) findViewById(R.id.button_first);
 		backButton = (Button) findViewById(R.id.button_back);
@@ -91,7 +94,10 @@ public class Activity_ShowRecording extends Activity {
 		}
 		currPeakInd = i;
 		peakCounterTextView.setText(currPeakInd+" of "+maxPeakInd);
-		showImage(myrec.getPeaks().get(currPeakInd-1));	// one less because List index starts from 0
+		Peak p = myrec.getPeaks().get(currPeakInd-1);	// one less because List index starts from 0
+		durPeaksTextView.setText(p.getDurationString());
+		maxBpmTextView.setText(String.valueOf((int)p.max_pulse));
+		showImage(p);
 	}
 	
 	private void showImage() {
