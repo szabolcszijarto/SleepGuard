@@ -9,20 +9,89 @@
     android:paddingTop="@dimen/activity_vertical_margin" >
 
     <TextView
-        android:id="@+id/recordingName"
+        android:id="@+id/recording_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Small Text"
+        android:text="@string/recording_name"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/button_first"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="50dp"
+            android:minWidth="40dp"
+            android:onClick="firstPeak"
+            android:text="&lt;&lt;" />
+
+        <Button
+            android:id="@+id/button_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="50dp"
+            android:minWidth="40dp"
+            android:onClick="backPeak"
+            android:text="&lt;" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/peak_counter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/peak_counter"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/button_goto"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="gotoPeak"
+                android:text="@string/button_goto" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/button_fwd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="50dp"
+            android:minWidth="40dp"
+            android:onClick="fwdPeak"
+            android:text=">" />
+
+        <Button
+            android:id="@+id/button_last"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="50dp"
+            android:minWidth="40dp"
+            android:onClick="lastPeak"
+            android:text=">>" />
+
+    </LinearLayout>
+
     <ImageView
-        android:id="@+id/recordingImage"
+        android:id="@+id/recording_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:scaleType="fitCenter"
-        android:scrollbars="none|horizontal" />
+        android:minHeight="360px"
+        android:scaleType="center" />
+
+    <Button
+        android:id="@+id/button_audio_play_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_audio_play_stop" />
 
 </LinearLayout>

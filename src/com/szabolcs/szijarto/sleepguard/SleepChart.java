@@ -16,6 +16,7 @@ import android.graphics.Rect;
 
 public class SleepChart {
 	
+	private Recording myrec;
 	private LinkedList<HeartRateRec> hrlist;
 	private LinkedList<Peak> peaklist;
 	private int x_sec_per_pixel;				// horizontal resolution of chart: normally 10
@@ -31,15 +32,14 @@ public class SleepChart {
 	private int elapsed_hour, elapsed_min, elapsed_sec;
 	private HeartRateRec rec_first, rec_last;
 	private int max_ind;
-	private short treshold;
 	private Bitmap b;
 	private Canvas c;
 	private Paint p;
 	
-	public SleepChart(LinkedList<HeartRateRec> hrlst, LinkedList<Peak> peaklst, short t) {
-		hrlist = hrlst;
-		peaklist = peaklst;
-		treshold = t;
+	public SleepChart(Recording r) {
+		myrec = r;
+		hrlist = r.getHrLst();
+		peaklist = r.getPeaks();
 		draw();
 	}
 
@@ -96,7 +96,7 @@ public class SleepChart {
 		x_origo = x_border;
 		y_origo = y_size-y_border;
 		marker_size = 2;
-		text_size_small = 8;
+		text_size_small = 9;
 		text_size_medium = 12;
 		text_height_medium = text_size_medium + 3;
 
@@ -112,15 +112,16 @@ public class SleepChart {
 	}
 
 	private void draw_treshold() {
-		p.setColor(Color.argb(128, 100, 0, 0)); // red, semi-transparent
-		c.drawLine(x_origo, y_origo-treshold, x_origo+chart_width, y_origo-treshold, p);
+		short t = myrec.getTreshold();
+		p.setColor(Color.argb(128, 200, 0, 0)); // red, semi-transparent
+		c.drawLine(x_origo, y_origo-t, x_origo+chart_width, y_origo-t, p);
 	}
 	
 	private void draw_peaks() {
 		Peak peak;
 		int x1, x2;
 		
-		p.setColor(Color.argb(128, 200, 0, 0)); // light red, semi-transparent
+		p.setColor(Color.argb(128, 230, 0, 0)); // light red, semi-transparent
 		p.setStyle(Style.FILL);
 		
 		ListIterator<Peak> l = peaklist.listIterator(0) ;
@@ -128,7 +129,7 @@ public class SleepChart {
 			peak = l.next();
 			x1 = (int) Math.floor( (peak.start_time.getTime() - rec_first.timestamp.getTime()) /1000.0 /x_sec_per_pixel );
 			x2 = (int) Math.floor( (peak.end_time.getTime() - rec_first.timestamp.getTime()) /1000.0 /x_sec_per_pixel );
-			Rect r = new Rect(x_origo+x1, y_origo-10, x_origo+x2, y_origo-chart_height+10);
+			Rect r = new Rect(x_origo+x1, y_origo-40, x_origo+x2, y_origo-chart_height-10);
 			c.drawRect(r, p);
 		}
 	}
@@ -138,8 +139,16 @@ public class SleepChart {
 		c.drawRect(x_border, y_border, x_size-x_border, y_border+header_height, p);
 		SimpleDateFormat ft;
 		ft = new SimpleDateFormat ("yyyy.MM.dd HH:mm:ss", Locale.US);
-		print_header_text(1, "Timeframe : "+ft.format(rec_first.timestamp.getTime()) +" - "+ ft.format(rec_last.timestamp.getTime()) );
-		print_header_text(2, "Duration     : "+elapsed_hour+":"+elapsed_min+":"+elapsed_sec);
+		print_header_text(1, "Timeframe : "+ft.format(rec_first.timestamp.getTime()) +
+							" - "+ft.format(rec_last.timestamp.getTime()) + "     " +
+							"Duration : "+elapsed_hour+":"+elapsed_min+":"+elapsed_sec );
+		long secs = myrec.getPeaks_dur();
+		int hour  = (int) ( secs / 3600 ) ;
+		int min   = (int) ( secs - (hour*3600) ) / 60 ;
+		int sec   = (int) ( secs - (hour*3600) ) % 60 ;
+		print_header_text(2, "Peaks : "+myrec.getPeaks_cnt() + "     " +
+							"Duration : "+ hour + ":" + min + ":" + sec + "     " +
+							"Max Bpm: "+myrec.getPeaks_max() );
 	}
 
 	private void print_header_text(int n, String s) {
@@ -180,7 +189,7 @@ public class SleepChart {
 				timelabel = f.format(timehere);
 				p.setTextSize(text_size_small);
 				p.setColor(Color.BLACK);
-				c.drawText(timelabel, x_origo+x-12, y_origo+y_border/2, p);
+				c.drawText(timelabel, x_origo+x-10, y_origo+text_size_small, p);
 			} else {
 				p.setColor(Color.BLACK);	// otherwise short black markers every minute in between 
 				c.drawLine(x_origo+x, y_origo            , x_origo+x, y_origo-marker_size, p);
@@ -190,21 +199,26 @@ public class SleepChart {
 	
 	private void draw_y_axis() {
 		p.setColor(Color.BLACK);
-		c.drawLine(x_origo, y_origo, x_origo, y_origo-chart_height-y_border, p);
+		c.drawLine(x_origo-1, y_origo, x_origo-1, y_origo-chart_height-y_border, p);
 		
 		// draw markers and labels
 		for (int mind = min_bpm; mind <= max_bpm ; mind=mind+bpm_minor) {
 			p.setColor(Color.BLACK);
 			p.setTextSize(text_size_small);
 			if (mind%bpm_major == 0) {
-				c.drawLine(x_origo-2*marker_size, y_origo-mind, x_origo+2*marker_size, y_origo-mind, p);	// Y axis long marker
-				c.drawText(String.valueOf(mind), 3, y_origo-mind, p);
+				c.drawLine(x_origo-1-2*marker_size, y_origo-mind, x_origo+2*marker_size, y_origo-mind, p);	// Y axis long marker
+				c.drawText(String.valueOf(mind), 1, y_origo-mind-1, p);
 			} else {
-				c.drawLine(x_origo-marker_size, y_origo-mind, x_origo+marker_size, y_origo-mind, p);		// Y axis short marker
+				c.drawLine(x_origo-1-marker_size, y_origo-mind, x_origo+marker_size, y_origo-mind, p);		// Y axis short marker
 			}
 			p.setColor(Color.GRAY);
 			c.drawLine(x_origo+2*marker_size, y_origo-mind, x_origo+chart_width, y_origo-mind, p);			// horizontal line
 		}
+
+		// print "Bpm" on top
+		p.setColor(Color.BLACK);
+		p.setTextSize(text_size_small);
+		c.drawText("Bpm", x_origo-12, y_origo-chart_height-20, p);
 	}
 
 	private void draw_chart() {

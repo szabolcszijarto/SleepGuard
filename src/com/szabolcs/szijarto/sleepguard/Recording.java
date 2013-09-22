@@ -12,13 +12,16 @@ import java.util.Locale;
 import android.graphics.Bitmap;
 
 public class Recording implements java.io.Serializable {
-	private static final long serialVersionUID = 19741001L;
+	private static final long serialVersionUID = 19741002L;
 	private transient SleepChart chart;
 
-	private LinkedList<HeartRateRec> lst = new LinkedList<HeartRateRec>();
+	private LinkedList<HeartRateRec> hrlst = new LinkedList<HeartRateRec>();
 	private LinkedList<Peak> peaks = new LinkedList<Peak>();
-	private static final short treshold = 75;	// peak treshold
 
+	private final short treshold = 75;	// peak treshold
+	private long peaks_dur = 0;			// total duration of peaks
+	private short peaks_max = 0;		// max heart rate during peaks
+	
 	private short last_pulse = 0;
 	private HeartRateRec last_rec = null;
 	
@@ -29,22 +32,23 @@ public class Recording implements java.io.Serializable {
 	
 	public void add(HeartRateRec r) {
 		// we only add the new record to the list if the pulse is different from the last one (interested only in changes)
-		if ( (r.pulse != last_pulse) || lst.isEmpty()) {
+		if ( (r.pulse != last_pulse) || hrlst.isEmpty()) {
 			if ( last_rec != null ) {
-				lst.add(last_rec);							// add last record of the old pulse value in order to have complete time intervals
+				hrlst.add(last_rec);							// add last record of the old pulse value in order to have complete time intervals
 				last_rec = null;							// forget this record, no longer needed
 			}
-			if (lst.add(r)) { last_pulse = r.pulse; } ;		// add new record, and remember its pulse value if successfully added
+			if (hrlst.add(r)) { last_pulse = r.pulse; } ;		// add new record, and remember its pulse value if successfully added
 		} else {
 			last_rec = r;									// otherwise we save this record for future use, see above
 		}
 	}
 
 	public void detectPeaks() {
-		ListIterator<HeartRateRec> i = lst.listIterator();
+		ListIterator<HeartRateRec> i = hrlst.listIterator();
 		HeartRateRec r;
 		Boolean inpeak = false;
 		Peak p = null;
+		// TODO skip peak right at the beginning...
 		while (i.hasNext()) {
 			r=i.next();
 			if ( (!inpeak) && (r.pulse >= treshold) ) {
@@ -65,18 +69,25 @@ public class Recording implements java.io.Serializable {
 				p.add(r);
 			}
 		}
-		// if still in peak, close it before we return
-		if (inpeak) {
-			p.close(i.previousIndex());
-			peaks.add(p);
+		// if still in peak, forget about it... we need no peak at the end of a recording
+		;
+
+		// calculate total duration of peaks and maximum heart rate
+		peaks_dur = 0;
+		peaks_max = 0;
+		ListIterator<Peak> j = peaks.listIterator();
+		while (j.hasNext()) {
+			p=j.next();
+			if ( p.max_pulse > peaks_max ) peaks_max = p.max_pulse ;
+			peaks_dur = peaks_dur + p.duration ;
 		}
 	}
 	
 	public void drawChartBitmap () {
 		if (chart == null) {
-			chart = new SleepChart(lst, peaks, treshold);
+			chart = new SleepChart(this);
 		} else {
-			chart.setHrList(lst);
+			chart.setHrList(hrlst);
 			chart.setPeakList(peaks);
 			chart.draw();
 		}
@@ -90,7 +101,7 @@ public class Recording implements java.io.Serializable {
 	public void dumpToCsv ( BufferedWriter w ) throws IOException {
 		// file size will be approx. 2775 bytes / min, which is ~ 166KB / hour or ~1.3MB per 8 hours sleep
 		HeartRateRec r = null;
-		Iterator<HeartRateRec> i = lst.iterator();
+		Iterator<HeartRateRec> i = hrlst.iterator();
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
 		w.write("seqno;timestamp;pulse;heartbeats\n"); // debug only
 		while ( i.hasNext() ) {
@@ -103,5 +114,29 @@ public class Recording implements java.io.Serializable {
 		if (chart != null ) {
 			chart.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, f);
 		};
+	}
+
+	public LinkedList<HeartRateRec> getHrLst() {
+		return hrlst;
+	}
+
+	public LinkedList<Peak> getPeaks() {
+		return peaks;
+	}
+
+	public short getTreshold() {
+		return treshold;
+	}
+
+	public int getPeaks_cnt() {
+		return peaks.size();
+	}
+
+	public long getPeaks_dur() {
+		return peaks_dur;
+	}
+
+	public short getPeaks_max() {
+		return peaks_max;
 	}
 }

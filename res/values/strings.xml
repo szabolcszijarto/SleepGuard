@@ -9,6 +9,11 @@
     <string name="startTime">started</string>
     <string name="endTime"  >finished</string>
     <string name="totalTime">elapsed</string>
+    <string name="button_audio_play_stop">Play</string>
+    <string name="button_goto">go to ...</string>
+    <string name="peak_counter">0 of 0</string>
+    <string name="recording_name">filename</string>
     <string name="item_delete">Delete</string>
     <string name="item_refresh">Refresh</string>
+    <string name="item_view">View</string>
 </resources>

@@ -16,14 +16,17 @@ import android.content.Context;
 import android.os.Environment;
 import android.widget.Toast;
 
-public class RecordingFile {
+public class RecordingFile implements java.io.Serializable {
+
+	private static final long serialVersionUID = 19743000L;
+	
 	private String fileName, displayName;
 	private File datDir, csvDir, pngDir;
-	private Context myc;
+	private transient Context myc;
 	public static final String datExtension = ".dat";
 	public static final String csvExtension = ".csv";
 	public static final String pngExtension = ".png";
-	public static final String EXTRA_RECFILENAME = "com.szabolcs.szijarto.sleepguard.recordingdatfilename";
+	public static final String EXTRA_RECORDINGFILEOBJECT = "com.szabolcs.szijarto.sleepguard.Recording";
 
 	// constructor getting only a context
 	public RecordingFile (Context c) {
@@ -43,6 +46,10 @@ public class RecordingFile {
 		myc = c;
 		setDirs();
 		setFileNameFromTimestamps(d1, d2);
+	}
+	
+	public void setContext (Context c) {
+		myc = c;
 	}
 	
 	private void setDirs() {

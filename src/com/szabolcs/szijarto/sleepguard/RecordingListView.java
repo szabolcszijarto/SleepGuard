@@ -77,19 +77,10 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		// determine png file name for the item that was clicked
-		RecordingFile ri = (RecordingFile) parent.getAdapter().getItem(position);
-		String pngfn = ri.getPngFullPath();
-		//if png file doesn't exist, but dat file does, then recreate png
-		if ( (!(new File(pngfn)).exists()) && (new File(ri.getDatFullPath()).exists()) ) {
-			// regenerate png and csv from dat
-			ri.refreshFiles(true, true);
-		}
-		if ( (new File(pngfn)).exists() ) {
-			// create intent and show image using gallery
-			Intent photoIntent = new Intent(Intent.ACTION_VIEW);
-			photoIntent.setDataAndType(Uri.fromFile(new File(pngfn)),"image/*");
-			parent.getContext().startActivity(photoIntent);
-		}
+		RecordingFile rf = (RecordingFile) parent.getAdapter().getItem(position);
+		Intent recordingIntent = new Intent(getContext(), Activity_ShowRecording.class);
+		recordingIntent.putExtra(RecordingFile.EXTRA_RECORDINGFILEOBJECT, rf);
+		getContext().startActivity(recordingIntent);
 	}
 		
 	@Override
@@ -121,18 +112,36 @@ public class RecordingListView extends ListView implements OnItemClickListener,	
     	    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             	@SuppressWarnings("unchecked")
     	    	ArrayAdapter<RecordingFile> a = (ArrayAdapter<RecordingFile>) parent.getAdapter();
-            	RecordingFile ri = (RecordingFile) a.getItem(position);
+            	RecordingFile rf = (RecordingFile) a.getItem(position);
     	        switch (item.getItemId()) {
     	            case R.id.item_delete:
     	        		//delete all the files and refresh the listview
-    	            	ri.deleteFiles(true, true, true);
-    	            	a.remove(ri);
+    	            	rf.deleteFiles(true, true, true);
+    	            	a.remove(rf);
     	                mode.finish(); // Action picked, so close the CAB
     	                return true;
     	            case R.id.item_refresh:
     	            	// refresh png and csv file for the recording
-    	            	ri.refreshFiles(true, true);
+    	            	rf.refreshFiles(true, true);
     	                mode.finish(); // Action picked, so close the CAB
+    	                return true;
+    	            case R.id.item_view:
+    	            	// view whole chart in external image viewer
+    	        		String pngfn = rf.getPngFullPath();
+    	        		File pngf = new File(pngfn);
+    	        		//if png file doesn't exist, but dat file does, then recreate png
+    	        		if ( (!pngf.exists()) && (new File(rf.getDatFullPath()).exists()) ) {
+    	        			// regenerate png and csv from dat
+    	        			rf.refreshFiles(true, true);
+    	        		}
+    	        		if ( pngf.exists() ) {
+    	        			// create intent and show image using gallery
+    	        			Intent photoIntent = new Intent(Intent.ACTION_VIEW);
+    	        			photoIntent.setDataAndType(Uri.fromFile(new File(pngfn)),"image/*");
+    	        			parent.getContext().startActivity(photoIntent);
+    	        		}
+    	        		// TODO is this OK?
+    	        		mode.finish(); // Action picked, so close the CAB
     	                return true;
     	            default:
     	                return false;
