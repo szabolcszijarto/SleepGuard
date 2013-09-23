@@ -107,7 +107,7 @@ public class Activity_ShowRecording extends Activity {
 	}
 	
 	private void showImage(Peak p) {
-		mybitmap = myrec.getChartBitmap();
+		mybitmap = myrec.getChartBitmap(p);
 		recordingImageView.setImageBitmap(mybitmap);
 		recordingImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 		;

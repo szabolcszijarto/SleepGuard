@@ -97,6 +97,28 @@ public class Recording implements java.io.Serializable {
 		if (chart == null) drawChartBitmap();
 		return chart.getBitmap();
 	}
+
+	public Bitmap getChartBitmap(Peak p) {
+		// construct a new HeartRateRec list with only the range of records around this particular peak
+		LinkedList<HeartRateRec> hrl = new LinkedList<HeartRateRec>();
+		int i, i1, i2;
+		final int margin = 20; //	so many records before and after the peak will still be included
+		i1 = Math.max( (p.start_index-margin), 0);
+		i2 = Math.min( (p.end_index+margin), hrlst.size()-1);
+		for (i=i1; i<i2; i++) {
+			hrl.add(hrlst.get(i));
+		}
+		// construct a new Peak list containing only this particular peak 
+		LinkedList<Peak> peaklist = new LinkedList<Peak>();
+		peaklist.add(p);
+		// draw a new chart using the data above
+		SleepChart c = new SleepChart(this);
+		c.setHrList(hrl);
+		c.setPeakList(peaklist);
+		c.draw();
+		// return the chart image
+		return c.getBitmap();
+	}
 	
 	public void dumpToCsv ( BufferedWriter w ) throws IOException {
 		// file size will be approx. 2775 bytes / min, which is ~ 166KB / hour or ~1.3MB per 8 hours sleep
