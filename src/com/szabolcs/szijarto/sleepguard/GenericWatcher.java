@@ -1,61 +1,80 @@
 package com.szabolcs.szijarto.sleepguard;
 
 import java.text.DateFormat;
-import java.util.Date;
 
 public abstract class GenericWatcher {
 
-	protected Date timeStarted, timeStopped;
-	private String timeElapsed = "";
-	private boolean started = false;
-	long elapsedMillis, elapsedSecs, elapsedMins, elapsedHours;
+	protected long timeStarted, timeStopped;
+	private String timeElapsedFormatted = "";
+	private boolean running = false;
+	private boolean wasEverStarted = false;
 
 	protected Activity_Main myact = null;
-	
-	public GenericWatcher (Activity_Main a) {
-		started = false;
+
+	public GenericWatcher(Activity_Main a) {
 		myact = a;
 	}
-	
+
 	public GenericWatcher() {
-		started = false;
+		running = false;
 	}
-		
+
 	public void start() {
-	  started = true;
-	  timeStarted = new Date();
-	  timeStopped = null;
-	  timeElapsed = "running...";
+		running = true;
+		wasEverStarted = true;
+		timeStarted = System.currentTimeMillis();
+		timeElapsedFormatted = "running...";
 	}
-	
+
+	private void calculateTimeElapsedFormatted() {
+		long elapsedMillis = timeStopped - timeStarted;
+		long elapsedSecs = elapsedMillis / 1000;
+		long elapsedMins = elapsedSecs / 60;
+		long elapsedHours = elapsedMins / 60;
+		timeElapsedFormatted = elapsedHours + ":" + elapsedMins + ":"
+				+ elapsedSecs;
+	}
+
 	public void stop() {
-	  started = false;
-	  timeStopped = new Date();
-	  elapsedMillis = timeStopped.getTime() - timeStarted.getTime();
-	  elapsedSecs = elapsedMillis/1000;
-	  elapsedMins = elapsedSecs/60;
-	  elapsedHours = elapsedMins/60;
-	  timeElapsed =  elapsedHours +":"+ elapsedMins +":"+ elapsedSecs; 
+		running = false;
+		timeStopped = System.currentTimeMillis();
+		calculateTimeElapsedFormatted();
 	}
 
 	public boolean isRunning() {
-		  return started;
+		return running;
 	}
 
-	public String getTimeStarted() {
-		if (timeStarted != null) {
-			return DateFormat.getDateTimeInstance().format(timeStarted);
-		} else return "";
+	public String getTimeStarted() throws GenericWatcherException {
+		final String timeFormatted;
+		if (wasEverStarted) {
+			timeFormatted = DateFormat.getDateTimeInstance()
+					.format(timeStarted);
+		} else {
+			throw new GenericWatcherException(
+					"Watcher was asked for start time, but was never started.");
+		}
+		return timeFormatted;
 	}
 
-	public String getTimeStopped() {
-		if (timeStopped != null) {
-			return DateFormat.getDateTimeInstance().format(timeStopped);
-		} else return "";
+	private boolean wasStoppedSinceLastStart() {
+		return wasEverStarted && !isRunning();
+	}
+
+	public String getTimeStopped() throws GenericWatcherException {
+		final String timeFormatted;
+		if (wasStoppedSinceLastStart()) {
+			timeFormatted = DateFormat.getDateTimeInstance()
+					.format(timeStopped);
+		} else {
+			throw new GenericWatcherException(
+					"Watcher was asked for stop time, but was not stopped since last start.");
+		}
+		return timeFormatted;
 	}
 
 	public String getTimeElapsed() {
-		return timeElapsed;
+		return timeElapsedFormatted;
 	}
-	
+
 }

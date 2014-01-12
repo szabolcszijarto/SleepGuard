@@ -25,7 +25,6 @@ public class HeartRateWatcher
 
 	public HeartRateWatcher (Activity_Main a) {
 		super(a);
-		r = new Recording();
 		// myAct.startStopButton.setEnabled(false);
 	}
 
@@ -51,12 +50,12 @@ public class HeartRateWatcher
 
 	@Override
 	public void start() {
-		if (!isConnected()) {
-			Toast.makeText(myact, "Please connect to HR belt first", Toast.LENGTH_SHORT).show();
-		} else {
-			// we're connected --> initialize and start the recording
-			r.init();
+		if (isConnected()) {
+			// we're connected
+			r = new Recording();
 			super.start();
+		} else {
+			Toast.makeText(myact, "Please connect to HR belt first", Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -159,7 +158,7 @@ public class HeartRateWatcher
                 	}
                 });
         	  // send a new heart rate record to the watcher
-        	  HeartRateRec hrrec = new HeartRateRec ( currentMessageCount, new Date(), (short) computedHeartRate, (int) heartBeatCounter );
+        	  HeartRateRec hrrec = new HeartRateRec ( currentMessageCount, new Date(), (byte) computedHeartRate, (int) heartBeatCounter );
         	  newBeat(hrrec);
           }
        });
