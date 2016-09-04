@@ -67,7 +67,9 @@ public class SleepChart {
 		max_bpm = 250;
 		bpm_minor = 10;
 		bpm_major = 50;
-		rec_first = hrlist.getFirst();
+
+		// TODO getFirst() returns null here, but this way it works - WHY???
+		rec_first = hrlist.get(1);
 		rec_last = hrlist.getLast();
 		
 		// the chart will only be created up to this position, in case values are still being added in parallel
@@ -229,8 +231,9 @@ public class SleepChart {
 		ListIterator<HeartRateRec> l = hrlist.listIterator(0) ;
 		Path t = new Path();
 		started = false;
-		while (l.hasNext() && (l.nextIndex()<max_ind)) {	// stop if no more records, or at max_ind, just in case extra records were added to the list in the meantime
-			r = l.next();
+
+        for (int i=1; i<=max_ind; i++) {
+			r = hrlist.get(i);
 			offset = (int) Math.floor( (r.timestamp.getTime() - rec_first.timestamp.getTime()) /1000.0 /x_sec_per_pixel );
 			if (!started) {
 				t.setLastPoint(x_origo+offset, y_origo-r.pulse);

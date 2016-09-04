@@ -1,7 +1,5 @@
 package com.szabolcs.szijarto.sleepguard;
 
-import java.util.Date;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -10,10 +8,17 @@ import android.net.Uri;
 import android.widget.Toast;
 
 import com.dsi.ant.plugins.AntPluginMsgDefines;
+
 import com.dsi.ant.plugins.AntPluginPcc.IDeviceStateChangeReceiver;
 import com.dsi.ant.plugins.AntPluginPcc.IPluginAccessResultReceiver;
+//New API version would have these instead...
+//import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc.IDeviceStateChangeReceiver;
+//import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc.IPluginAccessResultReceiver;
+
 import com.dsi.ant.plugins.antplus.pcc.AntPlusHeartRatePcc;
 import com.dsi.ant.plugins.antplus.pcc.AntPlusHeartRatePcc.IHeartRateDataReceiver;
+
+import java.util.Date;
 
 public class HeartRateWatcher
 	extends GenericWatcher implements IDeviceStateChangeReceiver, IPluginAccessResultReceiver<AntPlusHeartRatePcc>
