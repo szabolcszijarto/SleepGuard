@@ -16,12 +16,12 @@ public class Recording implements java.io.Serializable {
 	private static final long serialVersionUID = 19741002L;
 	private transient SleepChart chart;
 
-	private List<HeartRateRec> heartRateList = new LinkedList<HeartRateRec>();
-	private List<Peak> peaks = new LinkedList<Peak>();
+	private LinkedList<HeartRateRec> heartRateList = new LinkedList<HeartRateRec>();
+	private LinkedList<Peak> peaks = new LinkedList<Peak>();
 
 	private static final byte TRESHOLD = 75;
 	private long totalDurationOfPeaksMs = 0;
-	private byte maximumHeartRateDuringPeaks = 0;
+	private short maximumHeartRateDuringPeaks = 0;
 	
 	private HeartRateRec lastRecord;
 	private boolean lastRecordWasAddedToTheList = false;
@@ -60,8 +60,9 @@ public class Recording implements java.io.Serializable {
 			if ( (inpeak) && (r.pulse < TRESHOLD) ) {
 				// end of peak, save it and continue
 				inpeak = false;
-				p.close(i.previousIndex()-1);	// -1 because the current value isn't part of the peak any more
-				peaks.add(p); 					// add peak to list
+				//TODO
+				p.close(i-1);	// -1 because the current value isn't part of the peak any more
+				peaks.add(p); 	// add peak to list
 				continue;
 			}
 			if (inpeak) {
@@ -70,7 +71,6 @@ public class Recording implements java.io.Serializable {
 			}
 		}
 		// if still in peak, forget about it... we need no peak at the end of a recording
-		;
 
 		// calculate total duration of peaks and maximum heart rate
 		totalDurationOfPeaksMs = 0;
@@ -122,7 +122,7 @@ public class Recording implements java.io.Serializable {
 	
 	public void dumpToCsv ( BufferedWriter w ) throws IOException {
 		// file size will be approx. 2775 bytes / min, which is ~ 166KB / hour or ~1.3MB per 8 hours sleep
-		HeartRateRec r = null;
+		HeartRateRec r;
 		Iterator<HeartRateRec> i = heartRateList.iterator();
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
 		w.write("seqno;timestamp;pulse;heartbeats\n"); // debug only
@@ -135,7 +135,7 @@ public class Recording implements java.io.Serializable {
 	public void dumpToPng ( FileOutputStream f ) throws IOException {
 		if (chart != null ) {
 			chart.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, f);
-		};
+		}
 	}
 
 	public LinkedList<HeartRateRec> getHrLst() {

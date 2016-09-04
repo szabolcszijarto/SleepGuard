@@ -31,8 +31,7 @@ public abstract class GenericWatcher {
 		long elapsedSecs = elapsedMillis / 1000;
 		long elapsedMins = elapsedSecs / 60;
 		long elapsedHours = elapsedMins / 60;
-		timeElapsedFormatted = elapsedHours + ":" + elapsedMins + ":"
-				+ elapsedSecs;
+		timeElapsedFormatted = elapsedHours + ":" + elapsedMins + ":" + elapsedSecs;
 	}
 
 	public void stop() {
@@ -47,13 +46,10 @@ public abstract class GenericWatcher {
 
 	public String getTimeStarted() throws GenericWatcherException {
 		final String timeFormatted;
-		if (wasEverStarted) {
-			timeFormatted = DateFormat.getDateTimeInstance()
-					.format(timeStarted);
-		} else {
-			throw new GenericWatcherException(
-					"Watcher was asked for start time, but was never started.");
-		}
+		if (wasEverStarted)
+			timeFormatted = DateFormat.getDateTimeInstance().format(timeStarted);
+		else
+			throw new GenericWatcherException("Watcher was asked for start time, but was never started.");
 		return timeFormatted;
 	}
 
@@ -63,13 +59,10 @@ public abstract class GenericWatcher {
 
 	public String getTimeStopped() throws GenericWatcherException {
 		final String timeFormatted;
-		if (wasStoppedSinceLastStart()) {
-			timeFormatted = DateFormat.getDateTimeInstance()
-					.format(timeStopped);
-		} else {
-			throw new GenericWatcherException(
-					"Watcher was asked for stop time, but was not stopped since last start.");
-		}
+		if (wasStoppedSinceLastStart())
+			timeFormatted = DateFormat.getDateTimeInstance().format(timeStopped);
+		else
+			throw new GenericWatcherException("Watcher was asked for stop time, but was not stopped since last start.");
 		return timeFormatted;
 	}
 

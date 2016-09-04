@@ -68,9 +68,12 @@ public class Activity_Main extends Activity {
 			watcher.start();
 		}
 		// update watcher labels
-		startTimeTextView.setText(watcher.getTimeStarted());
-		endTimeTextView.setText(watcher.getTimeStopped());
-		totalTimeTextView.setText(watcher.getTimeElapsed());
+		try {
+			startTimeTextView.setText(watcher.getTimeStarted());
+			endTimeTextView.setText(watcher.getTimeStopped());
+			totalTimeTextView.setText(watcher.getTimeElapsed());
+		} catch (GenericWatcherException gwe) {
+		}
 	}
 
 	protected void findViews() {
