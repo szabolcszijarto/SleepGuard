@@ -20,34 +20,55 @@ import com.dsi.ant.plugins.antplus.pcc.AntPlusHeartRatePcc.IHeartRateDataReceive
 
 import java.util.Date;
 
+import static com.szabolcs.szijarto.sleepguard.R.*;
+
+
 public class HeartRateWatcher
 	extends GenericWatcher implements IDeviceStateChangeReceiver, IPluginAccessResultReceiver<AntPlusHeartRatePcc>
 {
 	private boolean connected = false;
 	private AntPlusHeartRatePcc hrPcc;
 	private Recording r;
-	private RecordingFile ri;
+	private RecordingFile rf;
 
 	public HeartRateWatcher (Activity_Main a) {
 		super(a);
-		// myAct.startStopButton.setEnabled(false);
+        // TODO not nice but this initializes the UI state
+        disconnect(true);
 	}
 
 	public void connect() {
-        myact.setStatus("Connecting...");
-        // register with the ANT+ plugin
-		AntPlusHeartRatePcc.requestAccess(myact, myact, this, this);
-		myact.connectButton.setText("Disconnect");
+        myact.setConnStatus("Connecting...");
+        AntPlusHeartRatePcc.requestAccess(myact, myact, this, this);    // register with the ANT+ plugin
 	}
 
-	public void disconnect(boolean skipReleaseAccess) {
+    public void setConnected() {
+        connected = true;
+        myact.setConnStatus("Connected to " + hrPcc.getDeviceName());
+        myact.connectButton.setImageResource(drawable.heart);
+        myact.connectButton.setEnabled(true);
+        myact.connectButton.setActivated(true);
+        myact.setRecStatus(myact.getResources().getString(string.clickToRecord));
+        myact.startStopButton.setImageResource(drawable.record);
+        myact.startStopButton.setEnabled(true);
+        myact.startStopButton.setActivated(false);
+    }
+
+    public void disconnect(boolean skipReleaseAccess) {
         connected = false;
         if (!skipReleaseAccess) { hrPcc.releaseAccess(); }
         hrPcc = null;
-        myact.setStatus("Disconnected");
-        // myAct.startStopButton.setEnabled(false);
-		myact.connectButton.setText("Connect");
-	}
+        myact.setConnStatus(myact.getResources().getString(R.string.clickToConnect));
+        myact.connectButton.setImageResource(drawable.ant_plus);
+        myact.connectButton.setEnabled(true);
+        myact.connectButton.setActivated(false);
+        myact.setPulse("");
+        myact.setRecStatus("");
+        myact.startStopButton.setImageResource(drawable.record);
+        myact.startStopButton.setEnabled(false);
+        myact.startStopButton.setActivated(false);
+        myact.setElapsTime("");
+    }
 
 	public boolean isConnected() {
 		return connected;
@@ -56,11 +77,14 @@ public class HeartRateWatcher
 	@Override
 	public void start() {
 		if (isConnected()) {
-			// we're connected
 			r = new Recording();
 			super.start();
+            myact.startStopButton.setImageResource(drawable.stop);
+            myact.startStopButton.setEnabled(true);
+            myact.startStopButton.setActivated(true);
+            myact.setRecStatus("Recording in progress...");
 		} else {
-			Toast.makeText(myact, "Please connect to HR belt first", Toast.LENGTH_SHORT).show();
+			Toast.makeText(myact, "Press the bluetooth icon to connect to the HR belt first", Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -69,27 +93,23 @@ public class HeartRateWatcher
 		// disconnect in order to allow safe saving of the recording (otherwise ConcurrentModificationException comes?)
 		disconnect(false);
 		// now that we know the time when the recording was stopped, set file names 
-		ri = new RecordingFile(myact, timeStarted,  timeStopped);
+		rf = new RecordingFile(myact, timeStarted,  timeStopped);
 		// detect peaks
 		r.detectPeaks();
 		// and now save the files
-		ri.save(r, true, true, true);
+		rf.save(r, true, true, true);
 	}
 
-	private void newBeat(HeartRateRec hrrec) {
-		// add beat to list if recording is running
-		if (isRunning()) { r.add(hrrec); };
-	}
-	
-    public void onDeviceStateChange(final int newDeviceState) {
+	public void onDeviceStateChange(final int newDeviceState) {
     	// this method is called back by the ANT+ plugin to notify of device state changes
-    	myact.runOnUiThread(new Runnable() {                                            
+    	myact.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                myact.setStatus(hrPcc.getDeviceName() + ": " + AntPlusHeartRatePcc.statusCodeToPrintableString(newDeviceState));
-                if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.DEAD) {
-                 	disconnect(false);
-                }
+                myact.setConnStatus("DEV STATE CHANGED: "+AntPlusHeartRatePcc.statusCodeToPrintableString(newDeviceState));
+                if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.TRACKING)
+                    setConnected();
+                if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.DEAD)
+                    stop();
             }
         });
     }	
@@ -99,25 +119,19 @@ public class HeartRateWatcher
     	switch(resultCode) {
     		// connected
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatSUCCESS:
-                Toast.makeText(myact, "Connected", Toast.LENGTH_SHORT).show();
             	hrPcc = result;
-                connected = true;
-        		//myAct.startStopButton.setEnabled(true);
-                myact.setStatus(result.getDeviceName() + ": " + AntPlusHeartRatePcc.statusCodeToPrintableString(initialDeviceStateCode));
+                setConnected();
                 subscribeToEvents();
                 break;
             // error handling
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatCHANNELNOTAVAILABLE:
-                Toast.makeText(myact, "Channel Not Available", Toast.LENGTH_SHORT).show();
-                myact.setStatus("Channel Not Available");
+                myact.setConnStatus("Channel Not Available");
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatOTHERFAILURE:
-                Toast.makeText(myact, "RequestAccess failed, see logcat for details", Toast.LENGTH_SHORT).show();
-                myact.setStatus("RequestAccess failed. Do Menu->Reset.");
+                myact.setConnStatus("RequestAccess failed.");
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatDEPENDENCYNOTINSTALLED:
-                Toast.makeText(myact, "ANT+ dependencies not installed", Toast.LENGTH_SHORT).show();
-                myact.setStatus("Please install ANT+ dependencies!");
+                myact.setConnStatus("ANT+ dependencies not installed");
             	AlertDialog.Builder adlgBldr = new AlertDialog.Builder(myact);
                 adlgBldr.setTitle("Missing Dependency");
                 adlgBldr.setMessage("The required application\n\"" + AntPlusHeartRatePcc.getMissingDependencyName() + "\"\n is not installed. Do you want to launch the Play Store to search for it?");
@@ -141,12 +155,10 @@ public class HeartRateWatcher
                 waitDialog.show();
                 break;
             case AntPluginMsgDefines.MSG_REQACC_RESULT_whatUSERCANCELLED:
-                Toast.makeText(myact, "User cancelled operation", Toast.LENGTH_SHORT).show();
-                myact.setStatus("Cancelled");
+                myact.setConnStatus("Cancelled");
                 break;
             default:
-                Toast.makeText(myact, "Unrecognized result: " + resultCode, Toast.LENGTH_SHORT).show();
-                myact.setStatus("Unrecognized result: " + resultCode + ". Do Menu->Reset.");
+                myact.setConnStatus("Unrecognized result: " + resultCode + ". Do Menu->Reset.");
                 break;
         } 
     }
@@ -154,32 +166,44 @@ public class HeartRateWatcher
    // Subscribe to heart rate events, connecting them to display their data.
    private void subscribeToEvents() {
        hrPcc.subscribeHeartRateDataEvent(new IHeartRateDataReceiver() {
-          @Override
-          public void onNewHeartRateData(final int currentMessageCount, final int computedHeartRate, final long heartBeatCounter) {
-        	  myact.runOnUiThread(new Runnable() {                                            
-                	@Override
-                	public void run() {
-                		myact.setPulse(String.valueOf(currentMessageCount)+" | "+String.valueOf(computedHeartRate)+" | "+String.valueOf(heartBeatCounter));
-                	}
-                });
-        	  // send a new heart rate record to the watcher
-        	  HeartRateRec hrrec = new HeartRateRec ( currentMessageCount, new Date(), (byte) computedHeartRate, (int) heartBeatCounter );
-        	  newBeat(hrrec);
+
+           private HeartRateRec hrrec;
+
+           @Override
+           public void onNewHeartRateData(final int currentMessageCount, final int computedHeartRate, final long heartBeatCounter) {
+               // TODO : this seems to cause hangups after running for a few hours?
+               // TODO : why is currentMessageCount always zero?
+
+               // save current heart rate record
+              hrrec = new HeartRateRec ( currentMessageCount, new Date(), (byte) computedHeartRate, (int) heartBeatCounter );
+
+               // update UI labels
+
+               if (isConnected()) {
+                   myact.runOnUiThread(new Runnable() {
+                       @Override
+                       public void run() {
+                           myact.setPulse(hrrec.pulse+" (#"+hrrec.heartbeats+")");
+                       }
+                   });
+               }
+
+               if (isRunning()) {
+
+                   // add a new heart rate record to the recording
+                   r.add(hrrec);
+
+                   // update UI labels
+        	       myact.runOnUiThread(new Runnable() {
+                       @Override
+                	   public void run() {
+                           myact.setElapsTime(getTimeElapsedString());
+                       }
+                   });
+               }
+
           }
        });
-/*
-       hrPcc.subscribeHeartRateDataTimestampEvent(new IHeartRateDataTimestampReceiver() {
-    	   @Override
-    	   public void onNewHeartRateDataTimestamp(final int currentMessageCount, final BigDecimal timestampOfLastEvent) {
-    		   myAct.runOnUiThread(new Runnable() {                                            
-    			   @Override
-    			   public void run() {
-				   // tv_msgsRcvdCount.setText(String.valueOf(currentMessageCount));
-				   // tv_timestampOfLastEvent.setText(String.valueOf(timestampOfLastEvent));
-    			   }
-    		   });
-    	   }
-       });
-*/
-   }    	
+   }
+
 }

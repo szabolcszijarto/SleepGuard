@@ -41,13 +41,6 @@ public class RecordingFile implements java.io.Serializable {
 		setFileNameFromDat(dfn);
 	}
 
-	private void initContextDirFileName(Context c, Date d1, Date d2) {
-		myc = c;
-		setDirs();
-		setFileNameFromTimestamps(d1, d2);
-
-	}
-
 	// constructor getting start and end timestamps of the recording
 	public RecordingFile(Context c, long t1, long t2) {
 		Date d1 = new Date(t1);
@@ -58,6 +51,12 @@ public class RecordingFile implements java.io.Serializable {
 	// constructor getting start and end date of the recording
 	public RecordingFile(Context c, Date d1, Date d2) {
 		initContextDirFileName(c, d1, d2);
+	}
+
+	private void initContextDirFileName(Context c, Date d1, Date d2) {
+		myc = c;
+		setDirs();
+		setFileNameFromTimestamps(d1, d2);
 	}
 
 	public void setContext(Context c) {

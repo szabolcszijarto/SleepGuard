@@ -6,105 +6,108 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin" >
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:weightSum="1"
+    android:background="#3e3e3e">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
 
-        <Button
+        <ImageButton
             android:id="@+id/connectButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:onClick="connDisconn"
-            android:text="@string/connectButton" />
+            android:text="@string/connectButton"
+            android:src="@drawable/ant_plus"
+            android:cropToPadding="false"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/connectButton"
+            android:clickable="false"
+            android:background="@null"
+            android:layout_margin="5dp" />
 
-        <TextView
-            android:id="@+id/statusTextView"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/statusMsg"
-            android:textAlignment="center"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:layout_margin="5dp">
+
+            <TextView
+                android:id="@+id/connStatusTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="@string/connStatusMsg"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/currentPulseTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="@string/currentPulse"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_weight="1" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/startStopButton"
-        android:layout_width="fill_parent"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/startStopButton"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:contentDescription="@string/startStopButton"
+            android:onClick="startStop"
+            android:src="@drawable/record"
+            android:scaleType="fitCenter"
+            android:background="@null"
+            android:layout_margin="5dp" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_margin="5dp">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/recStatusMsg"
+                android:id="@+id/recStatusTextView"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/elapsTimeTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="@string/elapsTime"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textIsSelectable="false"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/startStop"
-        android:onClick="startStop"
-        android:src="@android:drawable/btn_star" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/currentPulseTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/currentPulse"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="@dimen/activity_horizontal_margin" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/startTimeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/startTime"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="@dimen/activity_horizontal_margin" />
-
-        <TextView
-            android:id="@+id/recording_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:text="-"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textSize="@dimen/activity_horizontal_margin" />
-
-        <TextView
-            android:id="@+id/endTimeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/endTime"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="@dimen/activity_horizontal_margin" />
-
-        <TextView
-            android:id="@+id/totalTimeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/totalTime"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="@dimen/activity_horizontal_margin" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-    </LinearLayout>
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/reclist_label"
+        android:id="@+id/textView"
+        android:layout_marginTop="10dp" />
 
     <com.szabolcs.szijarto.sleepguard.RecordingListView
-        android:id="@+id/recordingListView"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="whatisthis"
-        android:visibility="visible" >
-
-    </com.szabolcs.szijarto.sleepguard.RecordingListView>
+        android:id="@+id/recordingListView" />
 
 </LinearLayout>

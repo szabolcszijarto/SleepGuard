@@ -18,7 +18,7 @@ public class Recording implements java.io.Serializable {
 	private LinkedList<HeartRateRec> heartRates;
 	private LinkedList<Peak> peaks;
 
-	private static final byte TRESHOLD = 75;
+	private static final byte TRESHOLD = 70;
 	private long totalDurationOfPeaksMs = 0;
 	private short maximumHeartRateDuringPeaks = 0;
 	
@@ -134,7 +134,7 @@ public class Recording implements java.io.Serializable {
 		// file size will be approx. 2775 bytes / min, which is ~ 166KB / hour or ~1.3MB per 8 hours sleep
 
 		w.write("seqno;timestamp;pulse;heartbeats\n"); // debug only
-		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
+		SimpleDateFormat ft = new SimpleDateFormat ("MM-dd HH:mm:ss.SSS", Locale.US);
 		HeartRateRec r;
 
 		for (int i=1; i<heartRates.size(); i++) {

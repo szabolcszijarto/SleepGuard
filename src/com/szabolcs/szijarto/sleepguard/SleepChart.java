@@ -64,7 +64,7 @@ public class SleepChart {
 
 	private void init() {
 		min_bpm = 50;
-		max_bpm = 250;
+		max_bpm = myrec.getPeaks_max()+30;
 		bpm_minor = 10;
 		bpm_major = 50;
 
@@ -83,8 +83,7 @@ public class SleepChart {
 		if (elapsed_secs < 600) {
 			x_sec_per_pixel = 1;	// if total duration is < 10 minutes, 1 pixel = 1 sec (high horizontal resolution)
 		} else {
-			// TODO TESTING ONLY, OTHERWISE 5
-			x_sec_per_pixel = 1;	// otherwise 1 pixel = 1 sec (lower horizontal resolution)
+			x_sec_per_pixel = 3;	// otherwise 1 pixel = 1 sec (lower horizontal resolution)
 		}
 		x_border = 20;
 		y_border = 15;
@@ -178,7 +177,7 @@ public class SleepChart {
 		SimpleDateFormat f = new SimpleDateFormat ("HH:mm", Locale.US);
 		for (int i=0; i<(elapsed_secs+timeoffset); i+=60 /* step by 1 minute */ ) {
 
-			// TODO there *must* be a better way to do this...
+			// TODO there must be a better way to do this...
 			x = (i -timeoffset) / x_sec_per_pixel;
 			if (x<0) continue; // skip if this marker would be off the chart
 			

@@ -2,20 +2,24 @@
 <resources>
     <string name="app_name">SleepGuard</string>
     <string name="action_settings">Settings</string>
-    <string name="connectButton">disconnect</string>
-    <string name="statusMsg">status</string>
-    <string name="startStop">start - stop button</string>
-    <string name="currentPulse">current pulse</string>
+    <string name="connectButton"></string>
+    <string name="connStatusMsg"></string>
+    <string name="clickToConnect">Click here to connect</string>
+    <string name="startStopButton"></string>
+    <string name="recStatusMsg"></string>
+    <string name="clickToRecord">Click here to start recording</string>
+    <string name="currentPulse"></string>
     <string name="startTime">started</string>
     <string name="endTime"  >finished</string>
-    <string name="totalTime">elapsed</string>
+    <string name="elapsTime"></string>
     <string name="button_audio_play_stop">Play</string>
     <string name="button_goto">go to ...</string>
     <string name="peak_counter">0 of 0</string>
-    <string name="recording_name">filename</string>
-    <string name="dur_label">duration: </string>
+    <string name="recording_name">recording name</string>
+    <string name="dur_label">Σ peak duration: </string>
     <string name="max_label">max bpm: </string>
     <string name="item_delete">Delete</string>
-    <string name="item_refresh">Refresh</string>
+    <string name="item_refresh">Dump</string>
     <string name="item_view">View</string>
+    <string name="reclist_label">Your recordings</string>
 </resources>

@@ -12,9 +12,8 @@ public class Activity_Main extends Activity {
 
 	static private HeartRateWatcher watcher;
 
-	private TextView statusTextView, currentPulseTextView, startTimeTextView, endTimeTextView, totalTimeTextView;
-	public Button connectButton;
-	public ImageButton startStopButton;
+	private TextView connStatusTextView, recStatusTextView, elapsTimeTextView, currentPulseTextView;
+	public ImageButton connectButton, startStopButton;
 	private RecordingListView recordingListView;
 
 	@Override
@@ -28,7 +27,6 @@ public class Activity_Main extends Activity {
 
 		// create and initialize new HeartRateWatcher instance
 		watcher = new HeartRateWatcher(this);
-		connectButton.setText("Connect"); // starting up in disconnected state, hence button label says "Connect"
 	}
 
 	@Override
@@ -42,13 +40,20 @@ public class Activity_Main extends Activity {
 		recordingListView.refresh(this);
 	}
 	
-	public void setStatus ( String s ) {
-		statusTextView.setText(s);
+	public void setConnStatus ( String s ) {
+		connStatusTextView.setText(s);
+	}
+
+	public void setRecStatus ( String s ) {
+		recStatusTextView.setText(s);
 	}
 
 	public void setPulse ( String s ) {
 		currentPulseTextView.setText(s);
 	}
+
+	public void setElapsTime ( String s ) { elapsTimeTextView.setText(s); }
+
 	
 	// connect-disconnect button onClick() handler
 	public void connDisconn(View view) {
@@ -67,23 +72,15 @@ public class Activity_Main extends Activity {
 		} else {
 			watcher.start();
 		}
-		// update watcher labels
-		try {
-			startTimeTextView.setText(watcher.getTimeStarted());
-			endTimeTextView.setText(watcher.getTimeStopped());
-			totalTimeTextView.setText(watcher.getTimeElapsed());
-		} catch (GenericWatcherException gwe) {
-		}
 	}
 
 	protected void findViews() {
-		connectButton = (Button) findViewById(R.id.connectButton);
-		statusTextView = (TextView) findViewById(R.id.statusTextView);
+		connectButton = (ImageButton) findViewById(R.id.connectButton);
+		connStatusTextView = (TextView) findViewById(R.id.connStatusTextView);
 		startStopButton = (ImageButton) findViewById(R.id.startStopButton);
+		recStatusTextView = (TextView) findViewById(R.id.recStatusTextView);
+		elapsTimeTextView = (TextView) findViewById(R.id.elapsTimeTextView);
 		currentPulseTextView = (TextView) findViewById(R.id.currentPulseTextView);
-		startTimeTextView = (TextView) findViewById(R.id.startTimeTextView);
-		endTimeTextView = (TextView) findViewById(R.id.endTimeTextView);
-		totalTimeTextView = (TextView) findViewById(R.id.totalTimeTextView);
 		recordingListView = (RecordingListView) findViewById(R.id.recordingListView);
 	}
 	

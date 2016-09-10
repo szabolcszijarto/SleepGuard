@@ -10,44 +10,44 @@
 
     <TextView
         android:id="@+id/recording_name"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/recording_name"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
 
         <Button
             android:id="@+id/button_first"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="50dp"
-            android:minWidth="40dp"
+            android:layout_height="fill_parent"
             android:onClick="firstPeak"
-            android:text="&lt;&lt;" />
+            android:text="&lt;&lt;"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/button_back"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="50dp"
-            android:minWidth="40dp"
+            android:layout_height="fill_parent"
             android:onClick="backPeak"
-            android:text="&lt;" />
+            android:text="&lt;"
+            android:layout_weight="1" />
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical" >
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="2">
 
             <TextView
                 android:id="@+id/peak_counter"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/peak_counter"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center_horizontal" />
 
             <Button
                 android:id="@+id/button_goto"
@@ -62,25 +62,23 @@
         <Button
             android:id="@+id/button_fwd"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="50dp"
-            android:minWidth="40dp"
+            android:layout_height="fill_parent"
             android:onClick="fwdPeak"
-            android:text=">" />
+            android:text=">"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/button_last"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="50dp"
-            android:minWidth="40dp"
+            android:layout_height="fill_parent"
             android:onClick="lastPeak"
-            android:text=">>" />
+            android:text=">>"
+            android:layout_weight="1" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
 
         <TextView
@@ -88,25 +86,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dur_label"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:gravity="right" />
 
         <TextView
             android:id="@+id/dur_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00:00" />
+            android:text="00:00:00"
+            android:layout_weight="2" />
 
         <TextView
             android:id="@+id/text_max_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/max_label" />
+            android:text="@string/max_label"
+            android:gravity="right" />
 
         <TextView
             android:id="@+id/max_bpm_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="000" />
+            android:text="000"
+            android:layout_weight="2" />
 
     </LinearLayout>
 
@@ -121,7 +123,7 @@
 
     <Button
         android:id="@+id/button_audio_play_stop"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/button_audio_play_stop" />
 
