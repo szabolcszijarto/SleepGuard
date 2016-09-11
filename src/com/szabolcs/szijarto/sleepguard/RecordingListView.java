@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import android.content.Context;
@@ -21,13 +20,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 
 public class RecordingListView extends ExpandableListView implements OnItemClickListener,	OnItemLongClickListener {
 
-    // TODO LinkedList<RecordingFile> recordingList = new LinkedList<RecordingFile>();    // list of .dat filenames containing serialized Recording objects
+    ExpandableListAdapter myAdapter;
+    List<String> myListTitles;
+    HashMap<String, List<String>> myListItems;
 
     private ActionMode mActionMode = null;
 
@@ -81,6 +81,9 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
             listChildrenItem.add("Number of peaks: ");
             listChildrenItem.add("Total peak duration: ");
             listChildrenItem.add("Max peak BPM: ");
+            listChildrenItem.add("Total duration: ");
+            listChildrenItem.add("Peaks per hour: ");
+            listChildrenItem.add("Weighted hourly peak score: ");
             listDetail.put(t.getDisplayName(), listChildrenItem);
         }
 
@@ -89,16 +92,12 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
 
     public void refresh(Context c) {
 
-        ExpandableListAdapter expandableListAdapter;
-        List<String> expandableListTitle;
-        HashMap<String, List<String>> expandableListDetail;
-
         // TODO recordingList.clear();
 
-        expandableListDetail = getData(c);
-        expandableListTitle = new ArrayList<String>(expandableListDetail.keySet());
-        expandableListAdapter = new RecordingListViewAdapter(c, expandableListTitle, expandableListDetail);
-        setAdapter(expandableListAdapter);
+        myListItems = getData(c);
+        myListTitles = new ArrayList<String>(myListItems.keySet());
+        myAdapter = new RecordingListViewAdapter(c, myListTitles, myListItems);
+        setAdapter(myAdapter);
 
         /* TODO OLD set adapter
         ArrayAdapter<RecordingFile> adapter = new ArrayAdapter<RecordingFile>(
@@ -110,6 +109,7 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
 
     @Override
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+        // TODO this never gets invoked since the class has been refactored to an ExpandableListView
         // determine png file name for the item that was clicked
         RecordingFile rf = (RecordingFile) parent.getAdapter().getItem(position);
         Intent recordingIntent = new Intent(getContext(), Activity_ShowRecording.class);

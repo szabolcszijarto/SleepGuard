@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -23,7 +22,7 @@ public class Activity_Main extends Activity {
 		findViews();
 		
 		// Fill Recording ListView
-		refreshRecordingList();
+		refreshRecordingListView();
 
 		// create and initialize new HeartRateWatcher instance
 		watcher = new HeartRateWatcher(this);
@@ -36,7 +35,7 @@ public class Activity_Main extends Activity {
 		return true;
 	}
 
-	public void refreshRecordingList () {
+	public void refreshRecordingListView() {
 		recordingListView.refresh(this);
 	}
 	
@@ -68,7 +67,7 @@ public class Activity_Main extends Activity {
 	public void startStop(View view) {
 		if (watcher.isRunning()) {
 			watcher.stop();
-			refreshRecordingList();
+			refreshRecordingListView();
 		} else {
 			watcher.start();
 		}
