@@ -30,12 +30,13 @@ public abstract class GenericWatcher {
 		}
 	}
 
-	public void stop() {
+	public Object stop() {
 		if (running) {
 			running = false;
 			timeStopped = System.currentTimeMillis();
 			calculateTimeElapsed();
 		}
+		return null;
 	}
 
   	public boolean isRunning() {

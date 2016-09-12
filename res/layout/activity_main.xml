@@ -19,7 +19,7 @@
             android:id="@+id/connectButton"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:onClick="connDisconn"
+            android:onClick="connDisconnOnClickHandler"
             android:text="@string/connectButton"
             android:src="@drawable/ant_plus"
             android:cropToPadding="false"
@@ -103,7 +103,9 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/reclist_label"
         android:id="@+id/textView"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"
+        android:lines="@android:integer/config_mediumAnimTime"
+        android:singleLine="true" />
 
     <com.szabolcs.szijarto.sleepguard.RecordingListView
         android:layout_width="wrap_content"

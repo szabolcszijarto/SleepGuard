@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -25,13 +26,18 @@ public class Recording implements java.io.Serializable {
 	private HeartRateRec lastRecord;
 	private boolean lastRecordWasAddedToTheList = false;
 
+	private String displayName;
+
+	public static final int nameSuffixLength = 3;
+
 	public Recording() {
 		heartRates = new LinkedList<HeartRateRec>();
 		peaks = new LinkedList<Peak>();
+		displayName = "Untitled_001"; // TODO add string resource
 	}
 
 	private boolean rateIsSameAsLast(HeartRateRec r){
-		return r.pulse == lastRecord.pulse;
+		return ( r.pulse == lastRecord.pulse );
 	}
 	
 	public void add(HeartRateRec r) {
@@ -162,15 +168,51 @@ public class Recording implements java.io.Serializable {
 		return TRESHOLD;
 	}
 
-	public int getPeaks_cnt() {
+	public int getweightedHourlyPeakScore() {
+		return 1; // TODO
+	}
+
+	public Date getTimeStarted() {
+		HeartRateRec hrr = heartRates.get(1);
+		Date d = hrr.timestamp;
+		return d;
+	}
+
+	public Date getTimeStopped() {
+		int i = heartRates.size();
+		HeartRateRec hrr = heartRates.get(i-1);
+		Date d = hrr.timestamp;
+		return d;
+	}
+
+	public float getTotalDurationInMinutes() {
+		long dms = getTimeStopped().getTime() - getTimeStarted().getTime();
+		float f = (float) (dms / 1000 / 60) ;
+		return f;
+	}
+
+	public float getTotalDurationInHours() {
+		return ( getTotalDurationInMinutes() / 60);
+	}
+
+	public int getNumberOfPeaks() {
 		return peaks.size();
 	}
 
-	public long getPeaks_dur() {
-		return totalDurationOfPeaksMs;
+	public long getTotalDurationOfPeaksInMinutes() {
+		return totalDurationOfPeaksMs / 1000 / 60;
 	}
 
-	public short getPeaks_max() {
+	public short getMaximumHeartRateDuringPeaks() {
 		return maximumHeartRateDuringPeaks;
 	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 }

@@ -21,5 +21,6 @@
     <string name="item_delete">Delete</string>
     <string name="item_refresh">Dump</string>
     <string name="item_view">View</string>
+    <string name="item_view_peaks">View Peaks</string>
     <string name="reclist_label">Your recordings</string>
 </resources>

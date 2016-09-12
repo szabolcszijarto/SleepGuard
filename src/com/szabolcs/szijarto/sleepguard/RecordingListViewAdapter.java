@@ -23,6 +23,40 @@ public class RecordingListViewAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
+    public Object getGroup(int listPosition) {
+        return this.expandableListTitle.get(listPosition);
+    }
+
+    @Override
+    public long getGroupId(int listPosition) {
+        return listPosition;
+    }
+
+    @Override
+    public View getGroupView(int listPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        String listTitle = (String) getGroup(listPosition);
+        if (convertView == null) {
+            LayoutInflater layoutInflater = (LayoutInflater) this.context.
+                    getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView = layoutInflater.inflate(R.layout.recording_list_view_group, null);
+        }
+        TextView listTitleTextView = (TextView) convertView.findViewById(R.id.recordingListViewGroup);
+        listTitleTextView.setTypeface(null, Typeface.BOLD);
+        listTitleTextView.setText(listTitle);
+        return convertView;
+    }
+
+    @Override
+    public int getGroupCount() {
+        return this.expandableListTitle.size();
+    }
+
+    public void removeGroup(int group) {
+        //TODO: Remove the according group. Dont forget to remove the children aswell!
+        notifyDataSetChanged();
+    }
+
+    @Override
     public Object getChild(int listPosition, int expandedListPosition) {
         return this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).get(expandedListPosition);
     }
@@ -33,8 +67,7 @@ public class RecordingListViewAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getChildView(int listPosition, final int expandedListPosition,
-                             boolean isLastChild, View convertView, ViewGroup parent) {
+    public View getChildView(int listPosition, final int expandedListPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         final String expandedListText = (String) getChild(listPosition, expandedListPosition);
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context
@@ -48,58 +81,14 @@ public class RecordingListViewAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildrenCount(int listPosition) {
-        return this.expandableListDetail.get(this.expandableListTitle.get(listPosition))
-                .size();
+        return this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).size();
     }
 
     @Override
-    public Object getGroup(int listPosition) {
-        return this.expandableListTitle.get(listPosition);
-    }
+    public boolean hasStableIds() { return false; }
 
     @Override
-    public int getGroupCount() {
-        return this.expandableListTitle.size();
-    }
+    public boolean isChildSelectable(int listPosition, int expandedListPosition) { return false; }
 
-    @Override
-    public long getGroupId(int listPosition) {
-        return listPosition;
-    }
-
-    @Override
-    public View getGroupView(int listPosition, boolean isExpanded,
-                             View convertView, ViewGroup parent) {
-        String listTitle = (String) getGroup(listPosition);
-        if (convertView == null) {
-            LayoutInflater layoutInflater = (LayoutInflater) this.context.
-                    getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = layoutInflater.inflate(R.layout.recording_list_view_group, null);
-        }
-        TextView listTitleTextView = (TextView) convertView.findViewById(R.id.recordingListViewGroup);
-        listTitleTextView.setTypeface(null, Typeface.BOLD);
-        listTitleTextView.setText(listTitle);
-        return convertView;
-    }
-
-    public void removeGroup(int group) {
-        //TODO: Remove the according group. Dont forget to remove the children aswell!
-        notifyDataSetChanged();
-    }
-
-    public void removeChild(int group, int child) {
-        //TODO: Remove the according child
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean hasStableIds() {
-        return false;
-    }
-
-    @Override
-    public boolean isChildSelectable(int listPosition, int expandedListPosition) {
-        return true;
-    }
 }
 

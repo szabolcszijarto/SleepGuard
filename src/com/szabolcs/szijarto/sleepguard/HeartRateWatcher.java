@@ -88,16 +88,17 @@ public class HeartRateWatcher
 		}
 	}
 
-	public void stop() {
+    public RecordingListItem stop() {
 		super.stop();
 		// disconnect in order to allow safe saving of the recording (otherwise ConcurrentModificationException comes?)
 		disconnect(false);
-		// now that we know the time when the recording was stopped, set file names 
-		rf = new RecordingFile(myact, timeStarted,  timeStopped);
-		// detect peaks
-		r.detectPeaks();
-		// and now save the files
+        r.detectPeaks();
+		// now that we know the time when the recording was stopped, set file names
+		rf = new RecordingFile(myact, r);
+		// save recording to all output files (DAT, PNG, CSV)
 		rf.save(r, true, true, true);
+        RecordingListItem rli = new RecordingListItem(r,rf);
+        return rli;
 	}
 
 	public void onDeviceStateChange(final int newDeviceState) {
@@ -106,10 +107,8 @@ public class HeartRateWatcher
             @Override
             public void run() {
                 myact.setConnStatus("DEV STATE CHANGED: "+AntPlusHeartRatePcc.statusCodeToPrintableString(newDeviceState));
-                if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.TRACKING)
-                    setConnected();
-                if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.DEAD)
-                    stop();
+                if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.TRACKING) setConnected();
+                if (newDeviceState == AntPluginMsgDefines.DeviceStateCodes.DEAD) stop();
             }
         });
     }	
@@ -163,8 +162,8 @@ public class HeartRateWatcher
         } 
     }
 	
-   // Subscribe to heart rate events, connecting them to display their data.
-   private void subscribeToEvents() {
+    // Subscribe to heart rate events, connecting them to display their data.
+    private void subscribeToEvents() {
        hrPcc.subscribeHeartRateDataEvent(new IHeartRateDataReceiver() {
 
            private HeartRateRec hrrec;
@@ -176,9 +175,8 @@ public class HeartRateWatcher
 
                // save current heart rate record
               hrrec = new HeartRateRec ( currentMessageCount, new Date(), (byte) computedHeartRate, (int) heartBeatCounter );
-
+/*
                // update UI labels
-
                if (isConnected()) {
                    myact.runOnUiThread(new Runnable() {
                        @Override
@@ -187,12 +185,12 @@ public class HeartRateWatcher
                        }
                    });
                }
-
+*/
                if (isRunning()) {
-
                    // add a new heart rate record to the recording
                    r.add(hrrec);
 
+                   /*
                    // update UI labels
         	       myact.runOnUiThread(new Runnable() {
                        @Override
@@ -200,6 +198,7 @@ public class HeartRateWatcher
                            myact.setElapsTime(getTimeElapsedString());
                        }
                    });
+                   */
                }
 
           }

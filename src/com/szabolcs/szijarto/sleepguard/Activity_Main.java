@@ -12,7 +12,13 @@ public class Activity_Main extends Activity {
 	static private HeartRateWatcher watcher;
 
 	private TextView connStatusTextView, recStatusTextView, elapsTimeTextView, currentPulseTextView;
+	// TODO why are these public?
 	public ImageButton connectButton, startStopButton;
+
+	public RecordingListView getRecordingListView() {
+		return recordingListView;
+	}
+
 	private RecordingListView recordingListView;
 
 	@Override
@@ -21,8 +27,8 @@ public class Activity_Main extends Activity {
 		setContentView(R.layout.activity_main);
 		findViews();
 		
-		// Fill Recording ListView
-		refreshRecordingListView();
+		// TODO Is this really unnecessary since the constructor already takes care of it?
+		// recordingListView.init();
 
 		// create and initialize new HeartRateWatcher instance
 		watcher = new HeartRateWatcher(this);
@@ -35,10 +41,6 @@ public class Activity_Main extends Activity {
 		return true;
 	}
 
-	public void refreshRecordingListView() {
-		recordingListView.refresh(this);
-	}
-	
 	public void setConnStatus ( String s ) {
 		connStatusTextView.setText(s);
 	}
@@ -53,9 +55,8 @@ public class Activity_Main extends Activity {
 
 	public void setElapsTime ( String s ) { elapsTimeTextView.setText(s); }
 
-	
 	// connect-disconnect button onClick() handler
-	public void connDisconn(View view) {
+	public void connDisconnOnClickHandler(View view) {
 		if ( watcher.isConnected() ) {
 			watcher.disconnect(false);
 		} else {
@@ -66,8 +67,8 @@ public class Activity_Main extends Activity {
 	// start-stop button onClick() handler
 	public void startStop(View view) {
 		if (watcher.isRunning()) {
-			watcher.stop();
-			refreshRecordingListView();
+			RecordingListItem rli = watcher.stop();
+			recordingListView.addItem(rli);
 		} else {
 			watcher.start();
 		}

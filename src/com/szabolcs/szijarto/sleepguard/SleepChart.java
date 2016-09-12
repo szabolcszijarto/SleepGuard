@@ -64,7 +64,7 @@ public class SleepChart {
 
 	private void init() {
 		min_bpm = 50;
-		max_bpm = myrec.getPeaks_max()+30;
+		max_bpm = myrec.getMaximumHeartRateDuringPeaks()+30;
 		bpm_minor = 10;
 		bpm_major = 50;
 
@@ -144,13 +144,13 @@ public class SleepChart {
 							" - "+ft.format(rec_last.timestamp.getTime()) + "     " +
 							"Duration : "+elapsed_hour+":"+elapsed_min+":"+elapsed_sec );
 		// TODO this should be a method of Recording, similar to getDurationString() in Peaks
-		long secs = myrec.getPeaks_dur();
+		long secs = myrec.getTotalDurationOfPeaksInMinutes();
 		int hour  = (int) ( secs / 3600 ) ;
 		int min   = (int) ( secs - (hour*3600) ) / 60 ;
 		int sec   = (int) ( secs - (hour*3600) ) % 60 ;
-		print_header_text(2, "Peaks : "+myrec.getPeaks_cnt() + "     " +
+		print_header_text(2, "Peaks : "+myrec.getNumberOfPeaks() + "     " +
 							"Duration : "+ hour + ":" + min + ":" + sec + "     " +
-							"Max Bpm: "+myrec.getPeaks_max() );
+							"Max Bpm: "+myrec.getMaximumHeartRateDuringPeaks() );
 	}
 
 	private void print_header_text(int n, String s) {

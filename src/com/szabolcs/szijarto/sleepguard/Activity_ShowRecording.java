@@ -10,8 +10,8 @@ import android.widget.TextView;
 
 public class Activity_ShowRecording extends Activity {
 
-	private RecordingFile myrf;
-	private Recording myrec;
+	private RecordingFile rf;
+	private Recording r;
 	private Bitmap mybitmap;
 	private int currPeakInd, maxPeakInd;		// currPeakind goes from 1..maxPeakInd 
 	private Button firstButton, backButton, fwdButton, lastButton;
@@ -32,11 +32,11 @@ public class Activity_ShowRecording extends Activity {
 	}
 	
 	private void init() {
-		myrf = (RecordingFile) getIntent().getSerializableExtra(RecordingFile.EXTRA_RECORDINGFILEOBJECT);
-		myrf.setContext(this);
-		myrec = myrf.deserializeRecording();
-		recordingNameTextView.setText(myrf.getDisplayName());
-		maxPeakInd = myrec.getPeaks_cnt();
+		rf = (RecordingFile) getIntent().getSerializableExtra(RecordingFile.EXTRA_RECORDINGFILEOBJECT);
+		rf.setContext(this);
+		r = rf.deserializeRecording();
+		recordingNameTextView.setText(r.getDisplayName());
+		maxPeakInd = r.getNumberOfPeaks();
 		if ( maxPeakInd == 0 ) {
 			// no peaks, display default image
 			currPeakInd = NOPEAKS;
@@ -94,20 +94,20 @@ public class Activity_ShowRecording extends Activity {
 		}
 		currPeakInd = i;
 		peakCounterTextView.setText(currPeakInd+" of "+maxPeakInd);
-		Peak p = myrec.getPeaks().get(currPeakInd-1);	// one less because List index starts from 0
+		Peak p = r.getPeaks().get(currPeakInd-1);	// one less because List index starts from 0
 		durPeaksTextView.setText(p.getDurationString());
 		maxBpmTextView.setText(String.valueOf((int)p.max_pulse));
 		showImage(p);
 	}
 	
 	private void showImage() {
-		mybitmap = myrec.getChartBitmap();
+		mybitmap = r.getChartBitmap();
 		recordingImageView.setImageBitmap(mybitmap);
 		recordingImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 	}
 	
 	private void showImage(Peak p) {
-		mybitmap = myrec.getChartBitmap(p);
+		mybitmap = r.getChartBitmap(p);
 		recordingImageView.setImageBitmap(mybitmap);
 		recordingImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 		;

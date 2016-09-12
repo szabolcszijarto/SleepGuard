@@ -20,43 +20,37 @@ public class RecordingFile implements java.io.Serializable {
 
 	private static final long serialVersionUID = 19743000L;
 
-	private String fileName, displayName;
+	private String fileName;
 	private File datDir, csvDir, pngDir;
 	private transient Context myc;
+
+	public static String getDatExtension() {
+		return datExtension;
+	}
+
 	public static final String datExtension = ".dat";
 	public static final String csvExtension = ".csv";
 	public static final String pngExtension = ".png";
 	public static final String EXTRA_RECORDINGFILEOBJECT = "com.szabolcs.szijarto.sleepguard.Recording";
 
-	// constructor getting only a context
+	// minimal constructor
 	public RecordingFile(Context c) {
-		myc = c;
+		setContext(c);
 		setDirs();
 	}
 
-	// constructor getting a .dat filename
+	// construct based on a .dat filename
 	public RecordingFile(Context c, String dfn) {
-		myc = c;
+		setContext(c);
 		setDirs();
 		setFileNameFromDat(dfn);
 	}
 
-	// constructor getting start and end timestamps of the recording
-	public RecordingFile(Context c, long t1, long t2) {
-		Date d1 = new Date(t1);
-		Date d2 = new Date(t2);
-		initContextDirFileName(c, d1, d2);
-	}
-
-	// constructor getting start and end date of the recording
-	public RecordingFile(Context c, Date d1, Date d2) {
-		initContextDirFileName(c, d1, d2);
-	}
-
-	private void initContextDirFileName(Context c, Date d1, Date d2) {
-		myc = c;
+	// construct based on a Recording object
+	public RecordingFile(Context c, Recording r) {
+		setContext(c);
 		setDirs();
-		setFileNameFromTimestamps(d1, d2);
+		setFileNameFromTimestamps(r.getTimeStarted(), r.getTimeStopped());
 	}
 
 	public void setContext(Context c) {
@@ -66,42 +60,16 @@ public class RecordingFile implements java.io.Serializable {
 	private void setDirs() {
 		datDir = myc.getExternalFilesDir(null);
 		csvDir = myc.getExternalFilesDir(null);
-		pngDir = Environment
-				.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		pngDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 	}
 
 	public void setFileNameFromDat(String s) {
-		fileName = s.substring(0,
-				s.length() - RecordingFile.datExtension.length());
-		setDisplayName();
+		fileName = s.substring(0, s.length() - RecordingFile.datExtension.length());
 	}
 
 	public void setFileNameFromTimestamps(Date timeStarted, Date timeStopped) {
 		SimpleDateFormat ft = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-		fileName = "sleepguard_" + ft.format(timeStarted) + "_"
-				+ ft.format(timeStopped);
-		setDisplayName();
-	}
-
-	private void setDisplayName() {
-		if (fileName != null) {
-			String s = fileName;
-			// get start and end timestamp from the filename and format it for
-			// display
-			displayName = s.substring(11, 15) + "." + s.substring(15, 17) + "."
-					+ s.substring(17, 19) + " " + s.substring(19, 21) + ":"
-					+ s.substring(21, 23) + ":" + s.substring(23, 25);
-		} else {
-			displayName = "";
-		}
-	}
-
-	public String getDisplayName() {
-		return displayName;
-	}
-
-	public String toString() {
-		return displayName;
+		fileName = "sleepguard_" + ft.format(timeStarted) + "_"	+ ft.format(timeStopped);
 	}
 
 	public String getDatFileName() {
@@ -169,14 +137,11 @@ public class RecordingFile implements java.io.Serializable {
 		}
 	}
 
-	public void save(Recording r, boolean saveDat, boolean saveCsv,
-			boolean savePng) {
+	public void save(Recording r, boolean saveDat, boolean saveCsv, boolean savePng) {
 		// save the recording in 3 formats to external storage
 		String state = Environment.getExternalStorageState();
 		if (!Environment.MEDIA_MOUNTED.equals(state)) {
-			Toast.makeText(myc, "Save error: cannot write to external storage",
-					Toast.LENGTH_LONG).show();
-			;
+			Toast.makeText(myc, "Save error: cannot write to external storage",Toast.LENGTH_LONG).show();
 			return;
 		}
 		// TODO display progress info
@@ -200,8 +165,7 @@ public class RecordingFile implements java.io.Serializable {
 			oos.close();
 			fout.close();
 		} catch (IOException i) {
-			Toast.makeText(myc, "DAT save error: " + i.toString(),
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(myc, "DAT save error: " + i.toString(),Toast.LENGTH_SHORT).show();
 			i.printStackTrace();
 		}
 	}
@@ -215,15 +179,11 @@ public class RecordingFile implements java.io.Serializable {
 			fileIn.close();
 			return r;
 		} catch (IOException i) {
-			Toast.makeText(myc,
-					"Exception when deserializing Recording: " + i.toString(),
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(myc,"Exception when deserializing Recording: " + i.toString(),Toast.LENGTH_SHORT).show();
 			i.printStackTrace();
 			return null;
 		} catch (ClassNotFoundException c) {
-			Toast.makeText(myc,
-					"Exception when deserializing Recording: " + c.toString(),
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(myc,"Exception when deserializing Recording: " + c.toString(),Toast.LENGTH_SHORT).show();
 			c.printStackTrace();
 			return null;
 		}
@@ -236,8 +196,7 @@ public class RecordingFile implements java.io.Serializable {
 			r.dumpToCsv(w);
 			w.close();
 		} catch (IOException i) {
-			Toast.makeText(myc, "CSV save error: " + i.toString(),
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(myc, "CSV save error: " + i.toString(),Toast.LENGTH_SHORT).show();
 			i.printStackTrace();
 		}
 	}
@@ -250,8 +209,7 @@ public class RecordingFile implements java.io.Serializable {
 			r.dumpToPng(of);
 			of.close();
 		} catch (IOException i) {
-			Toast.makeText(myc, "PNG save error: " + i.toString(),
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(myc, "PNG save error: " + i.toString(),Toast.LENGTH_SHORT).show();
 			i.printStackTrace();
 		}
 	}
