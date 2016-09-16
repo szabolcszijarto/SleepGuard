@@ -1,5 +1,6 @@
 package com.szabolcs.szijarto.sleepguard;
 
+import android.database.DataSetObserver;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -16,10 +17,19 @@ public class RecordingListViewAdapter extends BaseExpandableListAdapter {
     private List<String> expandableListTitle;
     private HashMap<String, List<String>> expandableListDetail;
 
+    public RecordingListViewAdapter(Context context) {
+        this.context = context;
+    }
+
     public RecordingListViewAdapter(Context context, List<String> expandableListTitle, HashMap<String, List<String>> expandableListDetail) {
         this.context = context;
         this.expandableListTitle = expandableListTitle;
         this.expandableListDetail = expandableListDetail;
+    }
+
+    @Override
+    public void registerDataSetObserver(DataSetObserver observer) {
+        super.registerDataSetObserver(observer);
     }
 
     @Override
@@ -51,8 +61,17 @@ public class RecordingListViewAdapter extends BaseExpandableListAdapter {
         return this.expandableListTitle.size();
     }
 
-    public void removeGroup(int group) {
+    public void addGroup(String title, List<String> detail) {
+        expandableListTitle.add(title);
+        expandableListDetail.put(title, detail);
+        notifyDataSetChanged();
+    }
+
+    public void removeGroup(int index) {
         //TODO: Remove the according group. Dont forget to remove the children aswell!
+        final String groupName = expandableListTitle.get(index);
+        expandableListDetail.remove(groupName);
+        expandableListTitle.remove(index);
         notifyDataSetChanged();
     }
 

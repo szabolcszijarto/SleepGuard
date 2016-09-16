@@ -2,6 +2,7 @@ package com.szabolcs.szijarto.sleepguard;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageButton;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 
 public class Activity_Main extends Activity {
 
+	private static final String TAG = "Activity_Main";
 	static private HeartRateWatcher watcher;
 
 	private TextView connStatusTextView, recStatusTextView, elapsTimeTextView, currentPulseTextView;
@@ -26,12 +28,14 @@ public class Activity_Main extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		findViews();
+        Log.i(TAG, "onCreate: findViews() completed");
 		
 		// TODO Is this really unnecessary since the constructor already takes care of it?
 		// recordingListView.init();
 
 		// create and initialize new HeartRateWatcher instance
 		watcher = new HeartRateWatcher(this);
+        Log.i(TAG, "onCreate: watcher constructed");
 	}
 
 	@Override

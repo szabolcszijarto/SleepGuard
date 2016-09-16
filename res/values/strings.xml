@@ -23,4 +23,7 @@
     <string name="item_view">View</string>
     <string name="item_view_peaks">View Peaks</string>
     <string name="reclist_label">Your recordings</string>
+    <string name="datfilename_label">Data file: </string>
+    <string name="csvfilename_label">CSV file: </string>
+    <string name="pngfilename_label">PNG image: </string>
 </resources>

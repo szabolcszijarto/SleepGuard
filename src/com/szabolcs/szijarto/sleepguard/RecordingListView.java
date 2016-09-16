@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,12 +28,14 @@ import android.widget.ExpandableListView;
 public class RecordingListView extends ExpandableListView implements OnItemClickListener,	OnItemLongClickListener {
 
     RecordingListViewAdapter myAdapter;
-    HashMap<String, List<String>> listViewItems;
+    ArrayList<RecordingListItem> rlis;
 
     private ActionMode mActionMode = null;
+    private static final String TAG = "RecordingListView";
 
     public RecordingListView(Context context) {
         super(context);
+        Log.i(TAG, "constructor #1 called");
         if (!isInEditMode()) {
             init();
             register4clicks();
@@ -41,6 +44,7 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
 
     public RecordingListView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        Log.i(TAG, "constructor #2 called");
         if (!isInEditMode()) {
             init();
             register4clicks();
@@ -49,6 +53,7 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
 
     public RecordingListView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        Log.i(TAG, "constructor #3 called");
         if (!isInEditMode()) {
             init();
             register4clicks();
@@ -58,14 +63,22 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
     private void register4clicks() {
         setOnItemClickListener(this);
         setOnItemLongClickListener(this);
+        Log.i(TAG, "register4clicks() completed");
     }
 
     private void init() {
-        listViewItems = new HashMap<String, List<String>>();
-        refreshItemsFromFiles();
-        List<String> myListTitles = new ArrayList<String>(listViewItems.keySet());
-        myAdapter = new RecordingListViewAdapter(getContext(), myListTitles, listViewItems);
+        Log.d(TAG, "init() called");
+
+        // first, initialize the adapter with empty lists
+        myAdapter = new RecordingListViewAdapter(getContext());
         setAdapter(myAdapter);
+
+        rlis.clear();
+        for ( RecordingListItem rli : getRecordingListItemsFromFiles() ) {
+            addItem(rli);
+        }
+
+        Log.i(TAG, "init() completed");
     }
 
     private ArrayList<RecordingListItem> getRecordingListItemsFromFiles() {
@@ -103,34 +116,12 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
         return rlis;
     }
 
-    public void refreshItemsFromFiles() {
-        ArrayList<RecordingListItem> rlis = getRecordingListItemsFromFiles();
-        listViewItems.clear();
-        for ( RecordingListItem rli : rlis) {
-            addItem(rli);
-        }
-    }
-
     public void addItem(RecordingListItem rli) {
-        List<String> childItems = new ArrayList<String>();
-        SimpleDateFormat ft = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
-        childItems.add( "Started:  " + ft.format(rli.getTimeStarted()) );
-        childItems.add( "Finished: " + ft.format(rli.getTimeStopped()) );
-        childItems.add( "Duration: " + rli.getTotalDurationInHours() + " hours");
-        childItems.add( "Total " + rli.getNumberOfPeaks() + " peaks lasting " + rli.getTotalDurationOfPeaksInMinutes() + " minutes");
-        childItems.add( "Max peak BPM: " + rli.getMaximumHeartRateDuringPeaks());
-        int np = rli.getNumberOfPeaks();
-        float td = rli.getTotalDurationInHours();
-        if (td > 0) {
-            childItems.add( "Average peaks per hour: " + (np/td) );
-        } else {
-            childItems.add( "Average peaks per hour: " + "n/a" );
-        }
-        childItems.add( "Weighted hourly peak score: " + rli.getWeightedHourlyPeakScore() );
 
         String name = rli.getDisplayName();
+
         // check for uniqueness, make the name unique if necessary
-        if (listViewItems.containsKey(name)) {
+        if (rlis.contains(name)) {
             String suffix = name.substring( name.length() - Recording.nameSuffixLength );
             try {
                 int i = Integer.parseInt(suffix);
@@ -143,29 +134,27 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
             // check again and increment until name becomes unique...
             suffix = name.substring( name.length() - Recording.nameSuffixLength );
             int i = Integer.parseInt(suffix);
-            while ( listViewItems.containsKey(name)) {
+            while ( rlis.contains(name)) {
                 i++;
                 name = name.substring( 0, name.length() - Recording.nameSuffixLength - 1 ) + "_" + String.format("%03d", i);
             }
         }
 
-        listViewItems.put(name, childItems);
+        rlis.add(rli);
+        myAdapter.addGroup(name, rli.getFormattedAttributes());
         refreshView();
     }
 
     public void refreshView() {
-        //TODO this doesn't do anything...
-        if ( myAdapter == null ) return;
-        synchronized (myAdapter) {
-            //myAdapter.notifyAll();
-            myAdapter.notifyDataSetChanged();
+        if ( myAdapter != null ) {
+            synchronized (myAdapter) { myAdapter.notifyDataSetChanged(); }
         }
     }
 
     @Override
     public void onItemClick(final AdapterView<?> parent, final View v, final int position, long id) {
-    };
-
+        return;
+    }
 
     @Override
     public boolean onItemLongClick(final AdapterView<?> parent, final View v, final int position, long id) {
@@ -196,8 +185,8 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 @SuppressWarnings("unchecked")
                 RecordingListViewAdapter a = (RecordingListViewAdapter) getExpandableListAdapter();
-                String recName = (String) a.getGroup(position);
-                RecordingFile rf = new RecordingFile(getContext(), recName+".dat");
+                String datFileName = rlis.get(position).getDatFileName();
+                RecordingFile rf = new RecordingFile(getContext(), datFileName);
                 switch (item.getItemId()) {
                     case R.id.item_delete:
                         //delete all the files and refresh the listview
