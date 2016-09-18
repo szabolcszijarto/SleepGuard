@@ -125,10 +125,10 @@ public class RecordingFile implements java.io.Serializable {
 	}
 
 	public void refreshFiles(boolean refreshCsv, boolean refreshPng) {
-		// TODO display progress info
 		Recording r = deserializeRecording();
-		// TODO this is not really needed... for testing only
 		r.detectPeaks();
+		// save data back in case peaks have changed (for example, if treshold has changed)
+		serializeRecording(r);
 		if (refreshCsv) {
 			saveCsv(r);
 		}
@@ -144,7 +144,7 @@ public class RecordingFile implements java.io.Serializable {
 			Toast.makeText(myc, "Save error: cannot write to external storage",Toast.LENGTH_LONG).show();
 			return;
 		}
-		// TODO display progress info
+		Toast.makeText(myc, "Saving data, please wait...",Toast.LENGTH_LONG).show();
 		if (saveDat) {
 			serializeRecording(r);
 		}
@@ -157,6 +157,10 @@ public class RecordingFile implements java.io.Serializable {
 	}
 
 	public void serializeRecording(Recording r) {
+		// set file names if not yet done
+		if ( getDatFileName() == null ) {
+			setFileNameFromTimestamps(r.getTimeStarted(), r.getTimeStopped());
+		}
 		// serialize object r to the dat file
 		try {
 			FileOutputStream fout = new FileOutputStream(getDatFullPath());

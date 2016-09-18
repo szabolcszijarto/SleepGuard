@@ -1,5 +1,6 @@
 package com.szabolcs.szijarto.sleepguard;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -9,37 +10,49 @@ import java.util.Locale;
 public class RecordingListItem {
     private static final String TAG = "RecordingListItem";
 
-    private String datFileName;
-    private String csvFileName;
-    private String pngFileName;
-
+    private String datFileName, csvFileName, pngFileName;
+    private String datFullPath, csvFullPath, pngFullPath;
     private String displayName;
-
     private Date timeStarted;
     private Date timeStopped;
-
     private float totalDurationInHours = 0;
     private int numberOfPeaks=0;
     private long totalDurationOfPeaksInMinutes = 0;
     private short maximumHeartRateDuringPeaks = 0;
-    private int weightedHourlyPeakScore=0;
+    private float weightedHourlyPeakScore=0;
 
-    public RecordingListItem(Recording r, RecordingFile rf) {
+    public RecordingListItem(Recording rec, RecordingFile rf) {
         datFileName = rf.getDatFileName();
         csvFileName = rf.getCsvFileName();
         pngFileName = rf.getPngFileName();
-        displayName = r.getDisplayName();
-        timeStarted = r.getTimeStarted();
-        timeStopped = r.getTimeStopped();
-        totalDurationInHours = r.getTotalDurationInHours();
-        numberOfPeaks = r.getNumberOfPeaks();
-        totalDurationOfPeaksInMinutes = r.getTotalDurationOfPeaksInMinutes();
-        maximumHeartRateDuringPeaks = r.getMaximumHeartRateDuringPeaks();
-        weightedHourlyPeakScore = r.getweightedHourlyPeakScore();
+        datFullPath = rf.getDatFullPath();
+        csvFullPath = rf.getCsvFullPath();
+        pngFullPath = rf.getPngFullPath();
+        displayName = rec.getDisplayName();
+        timeStarted = rec.getTimeStarted();
+        timeStopped = rec.getTimeStopped();
+        totalDurationInHours = rec.getTotalDurationInHours();
+        numberOfPeaks = rec.getNumberOfPeaks();
+        totalDurationOfPeaksInMinutes = rec.getTotalDurationOfPeaksInMinutes();
+        maximumHeartRateDuringPeaks = rec.getMaximumHeartRateDuringPeaks();
+        weightedHourlyPeakScore = rec.getweightedHourlyPeakScore();
     }
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public void setDisplayName(String s) {
+        displayName = s;
+    }
+
+    public String getLongDisplayName() {
+        int hours = getTotalDurationHours();
+        int mins = getTotalDurationMins();
+        SimpleDateFormat ft = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
+        String s = displayName +" "+ ft.format(getTimeStopped()) +" ("+ String.format(Locale.US, "%02d:%02d", hours, mins) +")" ;
+
+        return s;
     }
 
     public List<String> getFormattedAttributes() {
@@ -47,20 +60,18 @@ public class RecordingListItem {
         SimpleDateFormat ft = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
         childItems.add( "Started:  " + ft.format(getTimeStarted()) );
         childItems.add( "Finished: " + ft.format(getTimeStopped()) );
-        childItems.add( "Duration: " + getTotalDurationInHours() + " hours");
+        childItems.add( "Duration: " + getTotalDurationHours() + " hours " + getTotalDurationMins() + " minutes");
         childItems.add( "Total " + getNumberOfPeaks() + " peaks lasting " + getTotalDurationOfPeaksInMinutes() + " minutes");
         childItems.add( "Max peak BPM: " + getMaximumHeartRateDuringPeaks());
         int np = getNumberOfPeaks();
         float td = getTotalDurationInHours();
         if (td > 0) {
-            childItems.add( "Average peaks per hour: " + (np/td) );
+            childItems.add( "Average peaks per hour: " + new DecimalFormat("##.#").format(np/td) );
         } else {
             childItems.add( "Average peaks per hour: " + "n/a" );
         }
         childItems.add( "Weighted hourly peak score: " + getWeightedHourlyPeakScore() );
-        childItems.add( "Data file: " + getDatFileName());
-        childItems.add( "CSV file: " + getCsvFileName());
-        childItems.add( "PNG file: " + getPngFileName());
+        childItems.add( "Files:\n" + datFullPath + "\n" + csvFullPath + "\n" + pngFullPath);
 
         return childItems;
     }
@@ -74,10 +85,21 @@ public class RecordingListItem {
     public String getPngFileName() {
         return pngFileName;
     }
+    public String getDatFullPath() {
+        return datFullPath;
+    }
+    public String getCsvFullPath() {
+        return csvFullPath;
+    }
+    public String getPngFullPath() {
+        return pngFullPath;
+    }
 
     public float getTotalDurationInHours() {
         return totalDurationInHours;
     }
+    public int getTotalDurationHours() { return (int) Math.floor(totalDurationInHours); };
+    public int getTotalDurationMins() { return (int) Math.floor((totalDurationInHours - Math.floor(totalDurationInHours)) * 60); };
 
     public int getNumberOfPeaks() {
         return numberOfPeaks;

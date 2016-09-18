@@ -5,9 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.ListIterator;
 import java.util.Locale;
 
 import android.graphics.Bitmap;
@@ -19,21 +17,22 @@ public class Recording implements java.io.Serializable {
 	private LinkedList<HeartRateRec> heartRates;
 	private LinkedList<Peak> peaks;
 
-	private static final byte TRESHOLD = 70;
-	private long totalDurationOfPeaksMs = 0;
-	private short maximumHeartRateDuringPeaks = 0;
+	private static final byte TRESHOLD = 65;
+	private long totalDurationOfPeaksMs;
+	private short maximumHeartRateDuringPeaks;
+	private float totalPeakScore;
 	
 	private HeartRateRec lastRecord;
 	private boolean lastRecordWasAddedToTheList = false;
 
 	private String displayName;
 
-	public static final int nameSuffixLength = 3;
+	public static final String nameNumericSuffix = "001";
 
 	public Recording() {
 		heartRates = new LinkedList<HeartRateRec>();
 		peaks = new LinkedList<Peak>();
-		displayName = "Untitled_001"; // TODO add string resource
+		displayName = "Untitled_" + nameNumericSuffix; // TODO add string resource
 	}
 
 	private boolean rateIsSameAsLast(HeartRateRec r){
@@ -57,8 +56,9 @@ public class Recording implements java.io.Serializable {
 	public void detectPeaks() {
 		Boolean inpeak = false;
 		Peak p = null;
-		// TODO skip peak right at the beginning...
 		HeartRateRec r;
+
+		peaks.clear();
 		int i = 1;
 		while ( i<heartRates.size() ) {
 			r=heartRates.get(i);
@@ -66,6 +66,7 @@ public class Recording implements java.io.Serializable {
 				// start peak and continue
 				inpeak = true;
 				p = new Peak(r, i);
+				if (i == 1) p.beginner = true;
 			}
 			else if ( inpeak && (r.pulse >= TRESHOLD) ) {
 				// within peak
@@ -75,27 +76,26 @@ public class Recording implements java.io.Serializable {
 				// end of peak, save it and continue
 				inpeak = false;
 				p.close();
-				peaks.add(p);
+				// add it to the list only if it was not a dummy peak in the beginning ("go to bed" noise)
+				if (!p.beginner) peaks.add(p);
 			}
 			i++;
 		}
 
-		// if still in peak at the end, close it seamlessly
+		// if still in peak at the end, close it seamlessly but do not add it to the list ("wakeup" noise)
 		if (inpeak) {
-			// within peak
 			inpeak = false;
 			p.close();
-			peaks.add(p);
 		}
 
-		// calculate total duration of peaks and maximum heart rate
+		// calculate total duration of peaks, the maximum heart rate during peaks, and the total peak score
 		totalDurationOfPeaksMs = 0;
 		maximumHeartRateDuringPeaks = 0;
-		ListIterator<Peak> j = peaks.listIterator();
-		while (j.hasNext()) {
-			p = j.next();
-			if ( p.max_pulse > maximumHeartRateDuringPeaks ) maximumHeartRateDuringPeaks = p.max_pulse ;
-			totalDurationOfPeaksMs = totalDurationOfPeaksMs + p.duration ;
+		totalPeakScore = 0;
+		for ( Peak q : peaks ) {
+			totalDurationOfPeaksMs += q.duration ;
+			if ( q.max_pulse > maximumHeartRateDuringPeaks ) maximumHeartRateDuringPeaks = q.max_pulse ;
+			totalPeakScore += q.score;
 		}
 	}
 	
@@ -168,8 +168,8 @@ public class Recording implements java.io.Serializable {
 		return TRESHOLD;
 	}
 
-	public int getweightedHourlyPeakScore() {
-		return 1; // TODO
+	public float getweightedHourlyPeakScore() {
+		return (float) Math.floor( totalPeakScore / getTotalDurationInHours() );
 	}
 
 	public Date getTimeStarted() {

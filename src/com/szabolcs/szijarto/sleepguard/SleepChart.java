@@ -13,6 +13,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 
 public class SleepChart {
 	
@@ -83,11 +84,11 @@ public class SleepChart {
 		if (elapsed_secs < 600) {
 			x_sec_per_pixel = 1;	// if total duration is < 10 minutes, 1 pixel = 1 sec (high horizontal resolution)
 		} else {
-			x_sec_per_pixel = 3;	// otherwise 1 pixel = 1 sec (lower horizontal resolution)
+			x_sec_per_pixel = 4;	// otherwise 1 pixel = 1 sec (lower horizontal resolution)
 		}
 		x_border = 20;
 		y_border = 15;
-		header_height = 50;
+		header_height = 60;
 		chart_width = (int)Math.ceil(elapsed_secs / x_sec_per_pixel);
 		chart_height = max_bpm;
 		min_width = 380;
@@ -98,8 +99,8 @@ public class SleepChart {
 		y_origo = y_size-y_border;
 		marker_size = 2;
 		text_size_small = 9;
-		text_size_medium = 12;
-		text_height_medium = text_size_medium + 3;
+		text_size_medium = 15;
+		text_height_medium = text_size_medium + 5;
 
 		// create bitmap, canvas and paint
 		b = Bitmap.createBitmap( x_size, y_size, Bitmap.Config.ARGB_8888);
@@ -142,19 +143,20 @@ public class SleepChart {
 		ft = new SimpleDateFormat ("yyyy.MM.dd HH:mm:ss", Locale.US);
 		print_header_text(1, "Timeframe : "+ft.format(rec_first.timestamp.getTime()) +
 							" - "+ft.format(rec_last.timestamp.getTime()) + "     " +
-							"Duration : "+elapsed_hour+":"+elapsed_min+":"+elapsed_sec );
+							"Duration : "+String.format(Locale.US, "%02d:%02d:%02d", elapsed_hour , elapsed_min , elapsed_sec) );
 		// TODO this should be a method of Recording, similar to getDurationString() in Peaks
-		long secs = myrec.getTotalDurationOfPeaksInMinutes();
-		int hour  = (int) ( secs / 3600 ) ;
-		int min   = (int) ( secs - (hour*3600) ) / 60 ;
-		int sec   = (int) ( secs - (hour*3600) ) % 60 ;
-		print_header_text(2, "Peaks : "+myrec.getNumberOfPeaks() + "     " +
-							"Duration : "+ hour + ":" + min + ":" + sec + "     " +
-							"Max Bpm: "+myrec.getMaximumHeartRateDuringPeaks() );
+		print_header_text(2, "Peaks : " + myrec.getNumberOfPeaks() + "     " +
+						 	 "Duration : " + myrec.getTotalDurationOfPeaksInMinutes() + " minutes      " +
+							 "Max BPM : " + myrec.getMaximumHeartRateDuringPeaks() + "       " +
+							 "Peak score : " + myrec.getweightedHourlyPeakScore()
+						 );
 	}
 
 	private void print_header_text(int n, String s) {
 		p.setColor(Color.BLACK);
+		p.setTypeface(Typeface.DEFAULT);
+		p.setAntiAlias(false);
+        p.setStyle(Style.FILL);
 		p.setTextSize(text_size_medium);
 		c.drawText(s, x_origo+x_border/2, y_border+y_border/2+n*text_height_medium, p);
 	}
@@ -220,7 +222,7 @@ public class SleepChart {
 		// print "Bpm" on top
 		p.setColor(Color.BLACK);
 		p.setTextSize(text_size_small);
-		c.drawText("Bpm", x_origo-12, y_origo-chart_height-20, p);
+		c.drawText("BPM", x_origo-12, y_origo-chart_height-20, p);
 	}
 
 	private void draw_chart() {

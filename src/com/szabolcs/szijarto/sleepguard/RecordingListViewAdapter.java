@@ -17,10 +17,6 @@ public class RecordingListViewAdapter extends BaseExpandableListAdapter {
     private List<String> expandableListTitle;
     private HashMap<String, List<String>> expandableListDetail;
 
-    public RecordingListViewAdapter(Context context) {
-        this.context = context;
-    }
-
     public RecordingListViewAdapter(Context context, List<String> expandableListTitle, HashMap<String, List<String>> expandableListDetail) {
         this.context = context;
         this.expandableListTitle = expandableListTitle;
@@ -68,7 +64,6 @@ public class RecordingListViewAdapter extends BaseExpandableListAdapter {
     }
 
     public void removeGroup(int index) {
-        //TODO: Remove the according group. Dont forget to remove the children aswell!
         final String groupName = expandableListTitle.get(index);
         expandableListDetail.remove(groupName);
         expandableListTitle.remove(index);

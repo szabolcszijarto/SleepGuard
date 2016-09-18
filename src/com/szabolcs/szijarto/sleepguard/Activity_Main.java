@@ -11,7 +11,7 @@ import android.widget.TextView;
 public class Activity_Main extends Activity {
 
 	private static final String TAG = "Activity_Main";
-	static private HeartRateWatcher watcher;
+	static private ANTPlusHeartRateWatcher watcher;
 
 	private TextView connStatusTextView, recStatusTextView, elapsTimeTextView, currentPulseTextView;
 	// TODO why are these public?
@@ -28,14 +28,9 @@ public class Activity_Main extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		findViews();
-        Log.i(TAG, "onCreate: findViews() completed");
-		
-		// TODO Is this really unnecessary since the constructor already takes care of it?
-		// recordingListView.init();
 
-		// create and initialize new HeartRateWatcher instance
-		watcher = new HeartRateWatcher(this);
-        Log.i(TAG, "onCreate: watcher constructed");
+		// create and initialize new ANTPlusHeartRateWatcher instance
+		watcher = new ANTPlusHeartRateWatcher(this);
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package com.szabolcs.szijarto.sleepguard;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -14,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,69 +22,45 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 public class RecordingListView extends ExpandableListView implements OnItemClickListener,	OnItemLongClickListener {
 
-    RecordingListViewAdapter myAdapter;
-    ArrayList<RecordingListItem> rlis;
+    private RecordingListViewAdapter myAdapter;
+    private ArrayList<RecordingListItem> rlis;
 
     private ActionMode mActionMode = null;
     private static final String TAG = "RecordingListView";
 
     public RecordingListView(Context context) {
         super(context);
-        Log.i(TAG, "constructor #1 called");
-        if (!isInEditMode()) {
-            init();
-            register4clicks();
-        }
+        if (!isInEditMode()) init();
     }
 
     public RecordingListView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        Log.i(TAG, "constructor #2 called");
-        if (!isInEditMode()) {
-            init();
-            register4clicks();
-        }
+        if (!isInEditMode()) init();
     }
 
     public RecordingListView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        Log.i(TAG, "constructor #3 called");
-        if (!isInEditMode()) {
-            init();
-            register4clicks();
-        }
-    }
-
-    private void register4clicks() {
-        setOnItemClickListener(this);
-        setOnItemLongClickListener(this);
-        Log.i(TAG, "register4clicks() completed");
+        if (!isInEditMode()) init();
     }
 
     private void init() {
-        Log.d(TAG, "init() called");
-
-        // first, initialize the adapter with empty lists
-        myAdapter = new RecordingListViewAdapter(getContext());
-        setAdapter(myAdapter);
-
-        rlis.clear();
-        for ( RecordingListItem rli : getRecordingListItemsFromFiles() ) {
-            addItem(rli);
-        }
-
-        Log.i(TAG, "init() completed");
+        rlis = new ArrayList<RecordingListItem>();
+        // TODO why does this toast not work?
+        Toast.makeText(getContext(), "Loading data, please wait...", Toast.LENGTH_SHORT).show();
+        for ( RecordingListItem rli : getRecordingListItemsFromFiles() ) { addItem(rli); }
+        setOnItemClickListener(this);
+        setOnItemLongClickListener(this);
     }
 
     private ArrayList<RecordingListItem> getRecordingListItemsFromFiles() {
-        // TODO move this method to RecordingFile.java
         Recording r;
         RecordingFile rf;
         File[] datfiles;
-        ArrayList<RecordingListItem> rlis = new ArrayList<RecordingListItem>();
+        ArrayList<RecordingListItem> local_rlis = new ArrayList<RecordingListItem>();
 
         Context c = getContext();
 
@@ -105,43 +79,75 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
             }
         });
 
-        // create output list
+        // create list of RecordingListItem objects
         for (int i = 0; i < datfiles.length; i++) {
             rf = new RecordingFile(c, datfiles[i].getName());
             r = rf.deserializeRecording();
             RecordingListItem rli = new RecordingListItem(r,rf);
-            rlis.add(rli);
+            if ( nameAlreadyExists(rli.getDisplayName()) ) {
+                makeNameUnique(rli);
+                // persist dat file with new name
+                Toast.makeText(getContext(), "Saving data, please wait...",Toast.LENGTH_SHORT).show();
+                r.setDisplayName(rli.getDisplayName());
+                rf.serializeRecording(r);
+            }
+            local_rlis.add(rli);
         }
 
-        return rlis;
+        return local_rlis;
+    }
+
+    private boolean nameAlreadyExists(String name) {
+        for ( RecordingListItem r : rlis ) {
+            if (r.getDisplayName().compareTo(name) == 0) { return true; }
+        }
+        return false;
+    }
+
+    private void makeNameUnique(RecordingListItem rli) {
+        String name = rli.getDisplayName();
+        if ( !nameAlreadyExists(name) ) return;
+
+        int i;
+        String suffix = name.substring( name.length() - Recording.nameNumericSuffix.length() );
+        try {
+            i = Integer.parseInt(suffix);
+            // numeric suffix found
+        } catch (NumberFormatException e) {
+            // no numeric suffix found at the end, append the default one
+            suffix = Recording.nameNumericSuffix;
+            i = Integer.parseInt(suffix);
+            name = name + "_" + suffix ;
+        }
+        // check again and increment until name becomes unique...
+        while ( nameAlreadyExists(name) ) {
+            i++;
+            name = name.substring( 0, name.length() - Recording.nameNumericSuffix.length() ) + String.format(Locale.US, "%03d", i);
+        }
+        rli.setDisplayName(name);
     }
 
     public void addItem(RecordingListItem rli) {
 
-        String name = rli.getDisplayName();
+        // make the name unique
+        makeNameUnique(rli);
+        rlis.add(rli);
 
-        // check for uniqueness, make the name unique if necessary
-        if (rlis.contains(name)) {
-            String suffix = name.substring( name.length() - Recording.nameSuffixLength );
-            try {
-                int i = Integer.parseInt(suffix);
-                // suffix found, increment until it becomes unique...
-            } catch (NumberFormatException e) {
-                // no incrementable suffix found at the end, add an arbitrary one
-                name = name + "_000";
-            }
+        String longname = rli.getLongDisplayName();
 
-            // check again and increment until name becomes unique...
-            suffix = name.substring( name.length() - Recording.nameSuffixLength );
-            int i = Integer.parseInt(suffix);
-            while ( rlis.contains(name)) {
-                i++;
-                name = name.substring( 0, name.length() - Recording.nameSuffixLength - 1 ) + "_" + String.format("%03d", i);
-            }
+        if (myAdapter == null) {
+            // Initialize the adapter with the beginner group
+            List<String> titles = new ArrayList<String>();
+            titles.add(longname);
+            HashMap<String, List<String>> details = new HashMap<String, List<String>>();
+            details.put(longname, rli.getFormattedAttributes());
+            myAdapter = new RecordingListViewAdapter(getContext(), titles, details);
+            setAdapter(myAdapter);
+        } else {
+            // Add the new group to the existing adapter
+            myAdapter.addGroup(longname, rli.getFormattedAttributes());
         }
 
-        rlis.add(rli);
-        myAdapter.addGroup(name, rli.getFormattedAttributes());
         refreshView();
     }
 
@@ -197,6 +203,7 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
                     case R.id.item_refresh:
                         // refresh png and csv file for the recording
                         rf.refreshFiles(true, true);
+                        // TODO the rli and adapter group should be refreshed
                         mode.finish(); // Action picked, so close the CAB
                         return true;
                     case R.id.item_view:
@@ -214,7 +221,6 @@ public class RecordingListView extends ExpandableListView implements OnItemClick
                             photoIntent.setDataAndType(Uri.fromFile(new File(pngfn)), "image/*");
                             parent.getContext().startActivity(photoIntent);
                         }
-                        // TODO is this OK?
                         mode.finish(); // Action picked, so close the CAB
                         return true;
                     case R.id.item_view_peaks:
